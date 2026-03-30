@@ -120,7 +120,7 @@ async function syncFromSheets() {
             ...local,   // base = local (contient lastNote etc)
             ...a,       // écrase avec Sheets (source de vérité pour stock)
             id,
-            quantite:   parseFloat(a.quantite) || 0,
+            quantite:   parseFloat(String(a.quantite).replace(',','.').trim()) || 0,
             prix:       parseFloat(a.prix) || 0,
             // Ces champs ne sont JAMAIS écrasés par une valeur vide
             creePar:    best(a.creePar,    local.creePar),
@@ -194,7 +194,7 @@ async function initialSync() {
     // Sheets a déjà des données → on les prend
     state.articles = res.articles.map(a => ({
       ...a, id: parseInt(a.id)||a.id,
-      quantite: parseFloat(a.quantite)||0, prix: parseFloat(a.prix)||0,
+      quantite: parseFloat(String(a.quantite||'0').replace(',','.').trim())||0, prix: parseFloat(String(a.prix||'0').replace(',','.').trim())||0,
     }));
     state.mouvements = res.mouvements || [];
     const maxId = Math.max(...state.articles.map(a => parseInt(a.id)||0), 0);
@@ -363,8 +363,14 @@ function renderTable() {
     const sc = statutClass(r.statut);
     const qc = qtyClass(r.quantite);
     const sel = state.selectedIds.includes(r.id);
-    return `<tr data-id="${r.id}" ondblclick="openFiche(${r.id})" style="cursor:pointer" title="Double-clic pour voir la fiche" oncontextmenu="event.preventDefault();openFiche(${r.id})">
-      <td><input type="checkbox" class="row-cb" data-id="${r.id}" ${sel?'checked':''} /></td>
+    return `<tr data-id="${r.id}" 
+        ondblclick="openFiche(${r.id})" 
+        onclick="selectRow(${r.id}, event)"
+        oncontextmenu="event.preventDefault();openFiche(${r.id})"
+        style="cursor:pointer;transition:background 0.15s" 
+        class="table-row${sel?' row-selected':''}"
+        title="Clic pour sélectionner · Double-clic pour la fiche">
+      <td><input type="checkbox" class="row-cb" data-id="${r.id}" ${sel?'checked':''} onclick="event.stopPropagation()" /></td>
       <td>${r.designation}</td>
       <td><b style="color:${r.reference&&r.reference.toUpperCase().includes('S355')?'#f87171':r.reference&&r.reference.toUpperCase().includes('S235')?'#60a5fa':'inherit'}">${r.reference}</b></td>
       <td>${r.forme}</td>
@@ -557,6 +563,46 @@ function openEdit(id) {
   }, 50);
 }
 window.openEdit = openEdit;
+
+function selectRow(id, event) {
+  // Ignorer si on clique sur un bouton ou input
+  if (event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT' || event.target.closest('button')) return;
+  // Toggle sélection
+  if (state.selectedIds.includes(id)) {
+    state.selectedIds = state.selectedIds.filter(x => x !== id);
+  } else {
+    state.selectedIds.push(id);
+  }
+  // Mise à jour visuelle sans re-render complet
+  const tr = document.querySelector(`tr[data-id="${id}"]`);
+  const cb = document.querySelector(`.row-cb[data-id="${id}"]`);
+  if (tr) tr.classList.toggle('row-selected', state.selectedIds.includes(id));
+  if (cb) cb.checked = state.selectedIds.includes(id);
+  // Mettre à jour barre sélection
+  updateSelectionBar();
+}
+window.selectRow = selectRow;
+
+function updateSelectionBar() {
+  const bar  = document.getElementById('selectionBar');
+  const btn  = document.getElementById('btnDeleteSelected');
+  const count = state.selectedIds.length;
+  if (bar) bar.classList.toggle('hidden', count === 0);
+  if (btn) {
+    btn.classList.toggle('hidden', count === 0);
+    if (count) btn.textContent = `✕ Supprimer (${count})`;
+  }
+  // Mettre à jour selectAll
+  const visible = filteredArticles().map(r => r.id);
+  const cb = document.getElementById('selectAll');
+  if (cb) {
+    cb.checked = visible.length > 0 && visible.every(id => state.selectedIds.includes(id));
+    cb.indeterminate = visible.some(id => state.selectedIds.includes(id)) && !cb.checked;
+  }
+  // Mettre à jour label count
+  const countEl = document.getElementById('selectionCount');
+  if (countEl) countEl.textContent = count > 0 ? `${count} article(s) sélectionné(s)` : '';
+}
 
 function openAdd() {
   state.editingId = null;
@@ -825,7 +871,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       reference:  form.elements['reference']?.value  || '',
       forme:      form.elements['forme']?.value       || '',
       dimensions: form.elements['dimensions']?.value  || '',
-      quantite:   parseFloat(form.elements['quantite']?.value) || 1,
+      quantite:   parseFloat(form.elements['quantite']?.value) || 0,
     };
     // Ne recalculer que si le panneau marché est déjà ouvert
     if (document.getElementById('margeRow').style.display === 'none') return;
@@ -842,14 +888,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (_prixMarcheBase === null) return;
     const marge = parseInt(document.getElementById('margeSlider').value) / 100;
     const form  = document.getElementById('articleForm');
-    const qte   = parseFloat(form.elements['quantite']?.value) || 1;
-    // Prix total = prix unitaire × (1 + marge) × quantité
+    const qte   = parseFloat(form.elements['quantite']?.value) || 0;
     const prixUnitaire = Math.round(_prixMarcheBase * (1 + marge) * 100) / 100;
-    const prixTotal    = Math.round(prixUnitaire * qte * 100) / 100;
-    document.getElementById('prixInput').value = prixTotal;
+    // Si qte=0 → on met le prix unitaire (pas 0)
+    const prixAffiche  = qte > 0 ? Math.round(prixUnitaire * qte * 100) / 100 : prixUnitaire;
+    document.getElementById('prixInput').value = prixAffiche;
     document.getElementById('margeVal').textContent = '+' + Math.round(marge*100) + '%';
-    // Afficher le détail unitaire
-    document.getElementById('prixBase').textContent = prixUnitaire.toFixed(2) + ' € / unité × ' + qte;
+    document.getElementById('prixBase').textContent = qte > 0
+      ? prixUnitaire.toFixed(2) + ' € / unité × ' + qte
+      : prixUnitaire.toFixed(2) + ' € / unité';
   }
 
   function updatePrixInfo(result) {
@@ -874,7 +921,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       reference:  form.elements['reference']?.value  || '',
       forme:      form.elements['forme']?.value       || '',
       dimensions: form.elements['dimensions']?.value  || '',
-      quantite:   parseFloat(form.elements['quantite']?.value) || 1,
+      quantite:   parseFloat(form.elements['quantite']?.value) || 0,
     };
     const result = getPrixMarche(art);
     if (result) updatePrixInfo(result);
@@ -918,7 +965,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       reference:  form.elements['reference']?.value  || '',
       forme:      form.elements['forme']?.value       || '',
       dimensions: form.elements['dimensions']?.value  || '',
-      quantite:   parseFloat(form.elements['quantite']?.value) || 1,
+      quantite:   parseFloat(form.elements['quantite']?.value) || 0,
     };
     const result = getPrixMarche(art);
     const infoEl   = document.getElementById('prixMarcheInfo');
@@ -965,10 +1012,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateSelectAll(); renderDeleteBtn();
     }
   });
-  document.getElementById('selectAll').addEventListener('change', e => {
-    const visible=filteredArticles().map(r=>r.id);
-    state.selectedIds=e.target.checked?[...new Set([...state.selectedIds,...visible])]:state.selectedIds.filter(id=>!visible.includes(id));
+  // SelectAll dans l'en-tête
+  document.getElementById('selectAllHeader').addEventListener('change', e => {
+    const visible = filteredArticles().map(r => r.id);
+    state.selectedIds = e.target.checked
+      ? [...new Set([...state.selectedIds, ...visible])]
+      : state.selectedIds.filter(id => !visible.includes(id));
     renderTable();
+    updateSelectionBar();
+  });
+  // SelectAll dans la barre de sélection
+  document.getElementById('selectAll').addEventListener('change', e => {
+    const visible = filteredArticles().map(r => r.id);
+    state.selectedIds = e.target.checked
+      ? [...new Set([...state.selectedIds, ...visible])]
+      : state.selectedIds.filter(id => !visible.includes(id));
+    renderTable();
+    updateSelectionBar();
+  });
+  // Annuler sélection
+  document.getElementById('btnClearSelection').addEventListener('click', () => {
+    state.selectedIds = [];
+    renderTable();
+    updateSelectionBar();
   });
 
   // Suppression groupée
@@ -1551,7 +1617,7 @@ function getPrixMarche(article) {
   const ref   = String(article.reference  || '').toUpperCase();
   const forme = String(article.forme      || '').toUpperCase();
   const dims  = String(article.dimensions || '').toUpperCase();
-  const qte   = parseFloat(article.quantite) || 1;
+  const qte   = parseFloat(article.quantite) || 0;
 
   // Qualité acier
   const { coeff: coeffQualite, nuance } = getCoeffQualite(ref);
