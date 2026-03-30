@@ -855,6 +855,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderQRTab();
     });
   }
+  // Barre recherche Plan
+  const planSearch = document.getElementById('planSearch');
+  if (planSearch) {
+    planSearch.addEventListener('input', e => {
+      const q = e.target.value.trim().toUpperCase();
+      document.querySelectorAll('.plan-zone').forEach(g => {
+        const zone = g.dataset.zone;
+        g.style.opacity = (!q || zone.includes(q)) ? '1' : '0.2';
+      });
+      if (q) {
+        // Auto-ouvrir si une seule zone correspond
+        const matches = [...document.querySelectorAll('.plan-zone')].filter(g => g.dataset.zone.includes(q));
+        if (matches.length === 1) planZoneClick(matches[0].dataset.zone);
+      }
+    });
+  }
   document.getElementById('filtreStatut').addEventListener('change', e => { state.filtreStatut=e.target.value; renderTable(); });
   document.getElementById('filtreFormes').addEventListener('change', e => { state.filtreFormes=e.target.value; renderTable(); });
 
@@ -1068,6 +1084,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tab === 'qr') setTimeout(renderQRTab, 50);
+      if (btn.dataset.tab === 'plan') setTimeout(renderPlan, 50);
     });
   });
 
@@ -1899,6 +1916,96 @@ function initMarcheTab() {
 }
 
 // Event onglet marché
+
+// ============================================================
+//  PLAN DE L'USINE
+// ============================================================
+
+function renderPlan() {
+  const zones = {};
+  // Regrouper les articles par zone
+  state.articles.forEach(art => {
+    const loc = String(art.localisation || '').trim().toUpperCase();
+    if (!loc) return;
+    // Extraire la zone principale (ex: "ZA-01" → "ZA", "Z1-02" → "Z1")
+    const match = loc.match(/^(Z[A-Z0-9]+)/i);
+    const zone = match ? match[1].toUpperCase() : loc.split('-')[0].toUpperCase();
+    if (!zones[zone]) zones[zone] = { articles: [], rupture: false };
+    zones[zone].articles.push(art);
+    if (art.statut === 'Rupture') zones[zone].rupture = true;
+  });
+
+  // Colorier chaque zone sur le plan
+  document.querySelectorAll('.plan-zone').forEach(g => {
+    const zone = g.dataset.zone;
+    const rect = g.querySelector('.zone-rect');
+    const countEl = g.querySelector('.zone-count');
+    const labelEl = g.querySelector('.zone-label');
+    const data = zones[zone];
+
+    if (data && data.articles.length > 0) {
+      if (data.rupture) {
+        rect.setAttribute('fill', 'rgba(248,113,113,0.25)');
+        rect.setAttribute('stroke', '#f87171');
+        if (labelEl) labelEl.setAttribute('fill', '#f87171');
+      } else {
+        rect.setAttribute('fill', 'rgba(249,115,22,0.22)');
+        rect.setAttribute('stroke', '#f97316');
+        if (labelEl) labelEl.setAttribute('fill', '#f97316');
+      }
+      if (countEl) countEl.textContent = data.articles.length + ' article' + (data.articles.length > 1 ? 's' : '');
+    } else {
+      rect.setAttribute('fill', '#1e2436');
+      rect.setAttribute('stroke', '#475569');
+      if (labelEl) labelEl.setAttribute('fill', '#94a3b8');
+      if (countEl) countEl.textContent = '';
+    }
+    // Curseur pointer
+    g.style.cursor = 'pointer';
+  });
+}
+
+function planZoneClick(zone) {
+  const loc = zone.toUpperCase();
+  // Trouver tous les articles dans cette zone
+  const arts = state.articles.filter(art => {
+    const artLoc = String(art.localisation || '').trim().toUpperCase();
+    return artLoc === loc || artLoc.startsWith(loc + '-') || artLoc.startsWith(loc);
+  });
+
+  const popup  = document.getElementById('planPopup');
+  const overlay = document.getElementById('planOverlay');
+  const title  = document.getElementById('planPopupTitle');
+  const content = document.getElementById('planPopupContent');
+
+  title.textContent = 'ZONE ' + zone;
+
+  if (arts.length === 0) {
+    content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px">Aucun article dans cette zone</div>';
+  } else {
+    content.innerHTML = arts.map(art => `
+      <div onclick="document.getElementById('planPopup').classList.add('hidden');document.getElementById('planOverlay').classList.add('hidden');openFiche(${art.id})"
+        style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:4px;transition:background 0.15s"
+        onmouseover="this.style.background='rgba(249,115,22,0.1)'" onmouseout="this.style.background=''">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b style="color:var(--orange)">${art.reference}</b>
+          <span class="statut-badge ${statutClass(art.statut)}">${art.statut}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${art.designation}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${art.forme} · ${art.dimensions}</div>
+        <div style="font-size:12px;margin-top:3px">
+          <span style="color:${art.quantite===0?'#f87171':art.quantite<=3?'#fbbf24':'#34d399'};font-weight:700">${art.quantite} ${art.unite}</span>
+          <span style="color:var(--text-muted);margin-left:8px">📍 ${art.localisation}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  popup.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+}
+window.planZoneClick = planZoneClick;
+
 let _prixMarcheBase = null; // prix brut marché sans marge (global)
 
 document.addEventListener('DOMContentLoaded', () => {
