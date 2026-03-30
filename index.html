@@ -75,7 +75,7 @@
 <main id="tab-stock" class="tab-content active">
   <div class="toolbar">
     <div class="search-wrap">
-      <input type="search" id="searchInput" placeholder="🔍 Référence, désignation..." />
+      <input type="search" id="searchInput" placeholder="🔍 Référence, désignation..." style="border:none;outline:none;box-shadow:none" />
     </div>
     <div class="filters">
       <select id="filtreStatut">
@@ -101,7 +101,7 @@
     <table>
       <thead>
         <tr>
-          <th><input type="checkbox" id="selectAll" /></th>
+          <th style="width:36px"><input type="checkbox" id="selectAllHeader" title="Tout sélectionner" /></th>
           <th data-sort="designation">Désignation</th>
           <th data-sort="reference">Qualité acier</th>
           <th data-sort="forme">Forme</th>
@@ -125,7 +125,20 @@
   <div id="mobileCards" class="mobile-only"></div>
   <div class="table-footer">
     <span id="tableCount"></span>
-    <button class="btn-danger hidden" id="btnDeleteSelected">✕ Supprimer la sélection</button>
+  </div>
+  <!-- Barre de sélection (apparaît quand cases cochées) -->
+  <div id="selectionBar" class="hidden" style="
+    position:sticky;bottom:0;left:0;right:0;
+    background:var(--bg2);border-top:2px solid var(--orange);
+    padding:10px 16px;display:flex;align-items:center;gap:12px;
+    z-index:50;box-shadow:0 -4px 12px rgba(0,0,0,0.3)">
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-muted);font-size:13px">
+      <input type="checkbox" id="selectAll" style="width:16px;height:16px;accent-color:var(--orange)" />
+      Tout sélectionner
+    </label>
+    <span id="selectionCount" style="color:var(--orange);font-size:13px;font-weight:600;flex:1"></span>
+    <button class="btn-danger hidden" id="btnDeleteSelected" style="padding:8px 16px">✕ Supprimer</button>
+    <button class="btn-secondary" id="btnClearSelection" style="padding:8px 12px;font-size:12px">✕ Annuler</button>
   </div>
 </main>
 
