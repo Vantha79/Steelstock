@@ -675,3 +675,30 @@ textarea:focus { border-color: var(--orange) !important; }
 @media (max-width: 600px) {
   .bl-article-row { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── Surbrillance lignes tableau ── */
+.table-row:hover {
+  background: rgba(249,115,22,0.08) !important;
+}
+.row-selected {
+  background: rgba(249,115,22,0.18) !important;
+  border-left: 3px solid var(--orange);
+}
+.row-selected td {
+  color: #fff !important;
+}
+
+/* ── Barre de recherche sans bordure ── */
+#searchInput, #globalSearchInput {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.search-wrap {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg2);
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+}
