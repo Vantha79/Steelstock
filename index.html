@@ -2,56 +2,128 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Plan Zoning</title>
+<title>Plan complet</title>
+
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-  }
+body {
+  font-family: Arial;
+  background: #eee;
+}
 
-  .container {
-    display: flex;
-    gap: 20px;
-  }
+.container {
+  display: flex;
+  gap: 20px;
+}
 
-  .zone {
-    border: 2px solid black;
-    padding: 10px;
-    background: white;
-  }
+/* Zones générales */
+.zone {
+  border: 2px solid black;
+  background: white;
+  padding: 10px;
+}
 
-  .title {
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 10px;
-  }
+.title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 
-  .box {
-    border: 1px solid black;
-    padding: 10px;
-    margin: 5px 0;
-    text-align: center;
-  }
+/* Layout ZB */
+.zb {
+  width: 60%;
+}
 
-  .vertical {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    height: 150px;
-  }
+.zb-top {
+  display: flex;
+}
 
-  .small {
-    height: 40px;
-  }
+/* Colonnes verticales */
+.vertical-group {
+  display: flex;
+}
 
-  .left, .right {
-    width: 50%;
-  }
+.vertical-box {
+  border: 1px solid black;
+  writing-mode: vertical-rl;
+  text-align: center;
+  padding: 5px;
+  height: 180px;
+  width: 25px;
+}
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-  }
+/* Bloc PRS */
+.prs {
+  flex: 1;
+  border: 1px solid black;
+  margin-left: 10px;
+  position: relative;
+}
+
+.prs h3 {
+  text-align: center;
+}
+
+.porte {
+  position: absolute;
+  right: 0;
+  border-left: 1px solid black;
+  writing-mode: vertical-rl;
+  padding: 5px;
+}
+
+.porte.a { top: 10px; }
+.porte.b { bottom: 10px; }
+
+/* ZEC */
+.zec {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.zec div {
+  border: 1px solid black;
+  text-align: center;
+}
+
+/* Bas ZB */
+.zb-bottom {
+  display: flex;
+}
+
+.rack {
+  border: 1px solid black;
+  padding: 10px;
+  margin-left: 10px;
+}
+
+/* ZA */
+.za {
+  width: 35%;
+}
+
+.hall {
+  border: 1px solid black;
+  padding: 15px;
+  margin: 5px 0;
+  text-align: center;
+}
+
+/* Colonne droite Z1-Z9 */
+.zcol {
+  position: absolute;
+  right: -50px;
+  top: 40px;
+}
+
+.zcol div {
+  border: 1px solid black;
+  padding: 5px;
+  width: 40px;
+  text-align: center;
+}
+
 </style>
 </head>
 
@@ -60,51 +132,104 @@
 <div class="container">
 
   <!-- ZB -->
-  <div class="zone left">
+  <div class="zone zb">
     <div class="title">Z.B</div>
 
-    <div class="box">BATIMENT PRS</div>
+    <div class="zb-top">
 
-    <div style="display:flex; gap:10px;">
-      <div class="box vertical">PORTE A</div>
-      <div class="box vertical">PORTE B</div>
-    </div>
+      <!-- ZC -->
+      <div class="vertical-group">
+        <div class="vertical-box">ZC10</div>
+        <div class="vertical-box">ZC9</div>
+        <div class="vertical-box">ZC8</div>
+        <div class="vertical-box">ZC7</div>
+        <div class="vertical-box">ZC6</div>
+        <div class="vertical-box">ZC5</div>
+      </div>
 
-    <div class="box">
-      <div class="grid">
-        <div class="box small">ZEC1</div>
-        <div class="box small">ZEC2</div>
-        <div class="box small">ZEC3</div>
-        <div class="box small">ZEC4</div>
-        <div class="box small">ZEC5</div>
-        <div class="box small">ZEC6</div>
-        <div class="box small">ZEC7</div>
-        <div class="box small">ZEC8</div>
-        <div class="box small">ZEC9</div>
-        <div class="box small">ZEC10</div>
+      <!-- PRS -->
+      <div class="prs">
+        <h3>BATIMENT<br>PRS</h3>
+
+        <div class="porte a">PORTE A</div>
+        <div class="porte b">PORTE B</div>
       </div>
     </div>
 
-    <div class="box">RACK PEINTURE</div>
+    <!-- ZEC -->
+    <div class="zec">
+      <div>ZEC10</div><div>ZEC9</div>
+      <div>ZEC8</div><div>ZEC7</div>
+      <div>ZEC6</div><div>ZEC5</div>
+      <div>ZEC4</div><div>ZEC3</div>
+      <div>ZEC2</div><div>ZEC1</div>
+    </div>
+
+    <!-- Bas -->
+    <div class="zb-bottom">
+
+      <!-- ZD -->
+      <div class="vertical-group">
+        <div class="vertical-box">ZD10</div>
+        <div class="vertical-box">ZD9</div>
+        <div class="vertical-box">ZD8</div>
+        <div class="vertical-box">ZD7</div>
+        <div class="vertical-box">ZD6</div>
+        <div class="vertical-box">ZD5</div>
+        <div class="vertical-box">ZD4</div>
+        <div class="vertical-box">ZD3</div>
+        <div class="vertical-box">ZD2</div>
+        <div class="vertical-box">ZD1</div>
+      </div>
+
+      <!-- ZM -->
+      <div class="vertical-group">
+        <div class="vertical-box">ZM12</div>
+        <div class="vertical-box">ZM11</div>
+        <div class="vertical-box">ZM10</div>
+        <div class="vertical-box">ZM9</div>
+        <div class="vertical-box">ZM8</div>
+        <div class="vertical-box">ZM7</div>
+        <div class="vertical-box">ZM6</div>
+        <div class="vertical-box">ZM5</div>
+        <div class="vertical-box">ZM4</div>
+        <div class="vertical-box">ZM3</div>
+        <div class="vertical-box">ZM2</div>
+        <div class="vertical-box">ZM1</div>
+      </div>
+
+      <!-- Rack -->
+      <div class="rack">RACK PEINTURE<br>ZEO</div>
+
+    </div>
   </div>
 
   <!-- ZA -->
-  <div class="zone right">
+  <div class="zone za" style="position:relative;">
     <div class="title">Z.A</div>
 
-    <div class="box">BUREAUX</div>
+    <div class="hall">BUREAUX</div>
+    <div class="hall">HALL 4</div>
+    <div class="hall">HALL 5</div>
+    <div class="hall">HALL 6</div>
+    <div class="hall">HALL 7</div>
 
-    <div class="box">HALL 4</div>
-    <div class="box">HALL 5</div>
-    <div class="box">HALL 6</div>
-    <div class="box">HALL 7</div>
-    <div class="box">HALL 8</div>
+    <div class="hall">Z.F</div>
+    <div class="hall">HALL 8</div>
 
-    <div class="box">Z.F</div>
-
-    <div class="box">
-      <div>BUREAUX (Z1 → Z9)</div>
+    <!-- Colonne Z -->
+    <div class="zcol">
+      <div>Z9</div>
+      <div>Z8</div>
+      <div>Z7</div>
+      <div>Z6</div>
+      <div>Z5</div>
+      <div>Z4</div>
+      <div>Z3</div>
+      <div>Z2</div>
+      <div>Z1</div>
     </div>
+
   </div>
 
 </div>
