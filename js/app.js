@@ -855,20 +855,48 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderQRTab();
     });
   }
-  // Barre recherche Plan
+  // Barre recherche Zone
   const planSearch = document.getElementById('planSearch');
   if (planSearch) {
     planSearch.addEventListener('input', e => {
       const q = e.target.value.trim().toUpperCase();
       document.querySelectorAll('.plan-zone').forEach(g => {
         const zone = g.dataset.zone;
-        g.style.opacity = (!q || zone.includes(q)) ? '1' : '0.2';
+        g.style.opacity = (!q || zone.includes(q)) ? '1' : '0.15';
       });
       if (q) {
-        // Auto-ouvrir si une seule zone correspond
         const matches = [...document.querySelectorAll('.plan-zone')].filter(g => g.dataset.zone.includes(q));
         if (matches.length === 1) planZoneClick(matches[0].dataset.zone);
       }
+    });
+  }
+
+  // Barre recherche Article → trouver sa zone et l'allumer
+  const planArticleSearch = document.getElementById('planArticleSearch');
+  if (planArticleSearch) {
+    planArticleSearch.addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      // Réinitialiser
+      document.querySelectorAll('.plan-zone').forEach(g => { g.style.opacity = '1'; });
+      if (!q) return;
+      // Trouver les articles qui correspondent
+      const matched = state.articles.filter(a =>
+        [a.reference, a.designation, a.forme, a.dimensions].join(' ').toLowerCase().includes(q)
+      );
+      // Extraire leurs zones
+      const zones = new Set(matched.map(a => {
+        const loc = String(a.localisation || '').trim().toUpperCase();
+        return loc.split(/[-_ ]/)[0]; // ex: ZC5-01 → ZC5
+      }).filter(Boolean));
+      if (zones.size === 0) return;
+      // Griser les zones sans articles trouvés
+      document.querySelectorAll('.plan-zone').forEach(g => {
+        const z = g.dataset.zone;
+        const match = [...zones].some(zz => z.toUpperCase() === zz || z.toUpperCase().startsWith(zz));
+        g.style.opacity = match ? '1' : '0.1';
+      });
+      // Si une seule zone → ouvrir popup
+      if (zones.size === 1) planZoneClick([...zones][0]);
     });
   }
   document.getElementById('filtreStatut').addEventListener('change', e => { state.filtreStatut=e.target.value; renderTable(); });
