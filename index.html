@@ -340,176 +340,172 @@
   <div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:8px 12px">
     <h2 style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f97316;font-size:20px">🗺 PLAN DE L'USINE</h2>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <input type="search" id="planSearch" placeholder="🔍 Rechercher une zone (ex: ZC5)..."
-        style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;width:200px"/>
-      <input type="search" id="planArticleSearch" placeholder="🔍 Rechercher un article..."
-        style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;width:200px"/>
+      <input type="search" id="planSearch" placeholder="🔍 Zone (ex: ZC5)..."
+        style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;width:180px"/>
+      <input type="search" id="planArticleSearch" placeholder="🔍 Article..."
+        style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;width:180px"/>
     </div>
-    <!-- Légende couleurs -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;align-items:center">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:10px;align-items:center">
       <span style="background:rgba(74,222,128,0.2);border:1px solid #4ade80;padding:2px 6px;border-radius:3px;color:#4ade80">ZB</span>
       <span style="background:rgba(96,165,250,0.2);border:1px solid #60a5fa;padding:2px 6px;border-radius:3px;color:#60a5fa">ZC</span>
       <span style="background:rgba(167,139,250,0.2);border:1px solid #a78bfa;padding:2px 6px;border-radius:3px;color:#a78bfa">ZD</span>
       <span style="background:rgba(251,191,36,0.2);border:1px solid #fbbf24;padding:2px 6px;border-radius:3px;color:#fbbf24">ZE</span>
       <span style="background:rgba(249,115,22,0.2);border:1px solid #f97316;padding:2px 6px;border-radius:3px;color:#f97316">ZA/Halls/Z1-9</span>
-      <span style="background:rgba(248,113,113,0.2);border:1px solid #f87171;padding:2px 6px;border-radius:3px;color:#f87171">● Articles présents</span>
-      <span style="background:rgba(34,197,94,0.2);border:1px solid #22c55e;padding:2px 6px;border-radius:3px;color:#22c55e">● Disponible</span>
     </div>
   </div>
 
   <div style="width:100%;overflow:auto;padding:4px 8px">
-  <svg id="planSVG" viewBox="0 0 1100 620" preserveAspectRatio="xMidYMid meet"
-    style="width:100%;min-width:800px;background:#0d1117;border-radius:6px;border:1px solid #1e2d4a"
+  <svg id="planSVG" viewBox="0 0 1750 990" preserveAspectRatio="xMidYMid meet"
+    style="width:100%;min-width:1100px;background:#0d1117;border-radius:6px;border:1px solid #1e2d4a"
     xmlns="http://www.w3.org/2000/svg">
 
     <!-- ═══ ZB ═══ -->
     <g class="plan-zone" data-zone="ZB" onclick="planZoneClick('ZB')">
-      <rect x="5" y="5" width="480" height="45" rx="3" fill="#0d2010" stroke="#4ade80" stroke-width="2"/>
-      <text x="240" y="33" text-anchor="middle" class="zone-label" fill="#4ade80" font-size="22" font-family="Bebas Neue,sans-serif" letter-spacing="3">Z B</text>
+      <rect x="8" y="8" width="760" height="70" rx="4" class="zone-rect" fill="#0d2010" stroke="#4ade80" stroke-width="2.5"/>
+      <text x="380" y="52" text-anchor="middle" class="zone-label" fill="#4ade80" font-size="32" font-family="Bebas Neue,sans-serif" letter-spacing="4">Z B</text>
     </g>
 
-    <!-- ═══ ZC : rangées + PRS ═══ -->
-    <rect x="5" y="53" width="480" height="185" rx="2" fill="#0a1628" stroke="#1e3a8a" stroke-width="1.5"/>
+    <!-- ═══ ZC + PRS ═══ -->
+    <rect x="8" y="85" width="760" height="295" rx="3" fill="#0a1628" stroke="#1e3a8a" stroke-width="1.5"/>
 
-    <!-- ZC10→ZC5 pleines (bleu) -->
-    <g class="plan-zone" data-zone="ZC10" onclick="planZoneClick('ZC10')"><rect x="10"  y="57" width="22" height="177" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="21"  y="148" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,21,148)">ZC 10</text></g>
-    <g class="plan-zone" data-zone="ZC9"  onclick="planZoneClick('ZC9')"> <rect x="35"  y="57" width="22" height="177" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="46"  y="148" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,46,148)">ZC 9</text></g>
-    <g class="plan-zone" data-zone="ZC8"  onclick="planZoneClick('ZC8')"> <rect x="60"  y="57" width="22" height="177" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="71"  y="148" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,71,148)">ZC 8</text></g>
-    <g class="plan-zone" data-zone="ZC7"  onclick="planZoneClick('ZC7')"> <rect x="85"  y="57" width="22" height="177" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="96"  y="148" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,96,148)">ZC 7</text></g>
-    <g class="plan-zone" data-zone="ZC6"  onclick="planZoneClick('ZC6')"> <rect x="110" y="57" width="22" height="177" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="121" y="148" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,121,148)">ZC 6</text></g>
-    <g class="plan-zone" data-zone="ZC5"  onclick="planZoneClick('ZC5')"> <rect x="135" y="57" width="22" height="177" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="146" y="148" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,146,148)">ZC 5</text></g>
+    <!-- ZC10→ZC5 pleines -->
+    <g class="plan-zone" data-zone="ZC10" onclick="planZoneClick('ZC10')"><rect x="15"  y="90" width="36" height="283" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="33"  y="237" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,33,237)">ZC 10</text></g>
+    <g class="plan-zone" data-zone="ZC9"  onclick="planZoneClick('ZC9')"> <rect x="55"  y="90" width="36" height="283" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="73"  y="237" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,73,237)">ZC 9</text></g>
+    <g class="plan-zone" data-zone="ZC8"  onclick="planZoneClick('ZC8')"> <rect x="95"  y="90" width="36" height="283" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="113" y="237" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,113,237)">ZC 8</text></g>
+    <g class="plan-zone" data-zone="ZC7"  onclick="planZoneClick('ZC7')"> <rect x="135" y="90" width="36" height="283" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="153" y="237" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,153,237)">ZC 7</text></g>
+    <g class="plan-zone" data-zone="ZC6"  onclick="planZoneClick('ZC6')"> <rect x="175" y="90" width="36" height="283" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="193" y="237" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,193,237)">ZC 6</text></g>
+    <g class="plan-zone" data-zone="ZC5"  onclick="planZoneClick('ZC5')"> <rect x="215" y="90" width="36" height="283" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="233" y="237" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,233,237)">ZC 5</text></g>
 
-    <!-- ZC4→ZC1 coupées (bleu clair haut, bleu bas) -->
-    <g class="plan-zone" data-zone="ZC4-2" onclick="planZoneClick('ZC4-2')"><rect x="160" y="57"  width="22" height="85" rx="1" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="171" y="102" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,171,102)">ZC4-2</text></g>
-    <g class="plan-zone" data-zone="ZC4"   onclick="planZoneClick('ZC4')">  <rect x="160" y="147" width="22" height="87" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="171" y="193" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,171,193)">ZC 4</text></g>
-    <g class="plan-zone" data-zone="ZC3-2" onclick="planZoneClick('ZC3-2')"><rect x="185" y="57"  width="22" height="85" rx="1" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="196" y="102" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,196,102)">ZC3-2</text></g>
-    <g class="plan-zone" data-zone="ZC3"   onclick="planZoneClick('ZC3')">  <rect x="185" y="147" width="22" height="87" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="196" y="193" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,196,193)">ZC 3</text></g>
-    <g class="plan-zone" data-zone="ZC2-2" onclick="planZoneClick('ZC2-2')"><rect x="210" y="57"  width="22" height="85" rx="1" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="221" y="102" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,221,102)">ZC2-2</text></g>
-    <g class="plan-zone" data-zone="ZC2"   onclick="planZoneClick('ZC2')">  <rect x="210" y="147" width="22" height="87" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="221" y="193" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,221,193)">ZC 2</text></g>
-    <g class="plan-zone" data-zone="ZC1-2" onclick="planZoneClick('ZC1-2')"><rect x="235" y="57"  width="22" height="85" rx="1" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="246" y="102" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,246,102)">ZC1-2</text></g>
-    <g class="plan-zone" data-zone="ZC1"   onclick="planZoneClick('ZC1')">  <rect x="235" y="147" width="22" height="87" rx="1" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="246" y="193" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,246,193)">ZC 1</text></g>
+    <!-- ZC4→ZC1 coupées -->
+    <g class="plan-zone" data-zone="ZC4-2" onclick="planZoneClick('ZC4-2')"><rect x="255" y="90"  width="36" height="136" rx="2" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="273" y="161" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,273,161)">ZC4-2</text></g>
+    <g class="plan-zone" data-zone="ZC4"   onclick="planZoneClick('ZC4')">  <rect x="255" y="231" width="36" height="140" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="273" y="305" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,273,305)">ZC 4</text></g>
+    <g class="plan-zone" data-zone="ZC3-2" onclick="planZoneClick('ZC3-2')"><rect x="295" y="90"  width="36" height="136" rx="2" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="313" y="161" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,313,161)">ZC3-2</text></g>
+    <g class="plan-zone" data-zone="ZC3"   onclick="planZoneClick('ZC3')">  <rect x="295" y="231" width="36" height="140" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="313" y="305" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,313,305)">ZC 3</text></g>
+    <g class="plan-zone" data-zone="ZC2-2" onclick="planZoneClick('ZC2-2')"><rect x="335" y="90"  width="36" height="136" rx="2" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="353" y="161" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,353,161)">ZC2-2</text></g>
+    <g class="plan-zone" data-zone="ZC2"   onclick="planZoneClick('ZC2')">  <rect x="335" y="231" width="36" height="140" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="353" y="305" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,353,305)">ZC 2</text></g>
+    <g class="plan-zone" data-zone="ZC1-2" onclick="planZoneClick('ZC1-2')"><rect x="375" y="90"  width="36" height="136" rx="2" class="zone-rect" fill="#0d2040" stroke="#7dd3fc"/><text x="393" y="161" text-anchor="middle" class="zone-label" fill="#7dd3fc" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,393,161)">ZC1-2</text></g>
+    <g class="plan-zone" data-zone="ZC1"   onclick="planZoneClick('ZC1')">  <rect x="375" y="231" width="36" height="140" rx="2" class="zone-rect" fill="#0d1f3c" stroke="#3b82f6"/><text x="393" y="305" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,393,305)">ZC 1</text></g>
 
     <!-- PRS -->
-    <rect x="263" y="53" width="210" height="185" rx="3" fill="#070f20" stroke="#1e3a8a" stroke-width="2"/>
-    <text x="368" y="120" text-anchor="middle" fill="#1e3a8a" font-size="11" font-family="sans-serif">BÂTIMENT</text>
-    <text x="368" y="158" text-anchor="middle" fill="#3b82f6" font-size="28" font-family="Bebas Neue,sans-serif" font-weight="bold" letter-spacing="4">PRS</text>
-    <rect x="469" y="75"  width="7" height="38" rx="1" fill="#0f2040" stroke="#60a5fa" stroke-width="1.5"/>
-    <text x="480" y="93"  fill="#60a5fa" font-size="6" font-family="sans-serif">Porte A</text>
-    <rect x="469" y="165" width="7" height="38" rx="1" fill="#0f2040" stroke="#60a5fa" stroke-width="1.5"/>
-    <text x="480" y="183" fill="#60a5fa" font-size="6" font-family="sans-serif">Porte B</text>
+    <rect x="418" y="85" width="335" height="295" rx="4" fill="#070f20" stroke="#1e3a8a" stroke-width="2"/>
+    <text x="585" y="190" text-anchor="middle" fill="#1e3a8a" font-size="16" font-family="sans-serif">BÂTIMENT</text>
+    <text x="585" y="255" text-anchor="middle" fill="#3b82f6" font-size="44" font-family="Bebas Neue,sans-serif" letter-spacing="6">PRS</text>
+    <rect x="747" y="120" width="10" height="60" rx="2" fill="#0f2040" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="762" y="148" fill="#60a5fa" font-size="9" font-family="sans-serif">Porte A</text>
+    <rect x="747" y="265" width="10" height="60" rx="2" fill="#0f2040" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="762" y="293" fill="#60a5fa" font-size="9" font-family="sans-serif">Porte B</text>
 
-    <!-- ═══ MILIEU : Zone Prépa centrée + ZEC ═══ -->
-    <!-- Zone Prépa : centré entre x=5 et x=263 → milieu=134, largeur=120 → x=74 -->
+    <!-- ═══ MILIEU : Zone Prépa + ZEC ═══ -->
+    <!-- Zone Prépa centrée entre x=8 et x=418 → centre=213, largeur=170 → x=128 -->
     <g class="plan-zone" data-zone="ZONE-PREP" onclick="planZoneClick('ZONE-PREP')">
-      <rect x="74" y="250" width="120" height="45" rx="3" class="zone-rect" fill="#1c1000" stroke="#f97316" stroke-width="1.5"/>
-      <text x="134" y="268" text-anchor="middle" class="zone-label" fill="#f97316" font-size="7" font-family="sans-serif">ZONE</text>
-      <text x="134" y="283" text-anchor="middle" class="zone-label" fill="#f97316" font-size="7" font-family="sans-serif">PREPARATION</text>
+      <rect x="128" y="398" width="170" height="65" rx="3" class="zone-rect" fill="#1c1000" stroke="#f97316" stroke-width="2"/>
+      <text x="213" y="424" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="sans-serif">ZONE</text>
+      <text x="213" y="444" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="sans-serif">PREPARATION</text>
     </g>
 
-    <!-- ZEC alignées x=263 (violet) -->
-    <g class="plan-zone" data-zone="ZEC10" onclick="planZoneClick('ZEC10')"><rect x="263" y="245" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="290" y="259" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC10</text></g>
-    <g class="plan-zone" data-zone="ZEC9"  onclick="planZoneClick('ZEC9')"> <rect x="321" y="245" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="348" y="259" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC9</text></g>
-    <g class="plan-zone" data-zone="ZEC8"  onclick="planZoneClick('ZEC8')"> <rect x="263" y="268" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="290" y="282" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC8</text></g>
-    <g class="plan-zone" data-zone="ZEC7"  onclick="planZoneClick('ZEC7')"> <rect x="321" y="268" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="348" y="282" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC7</text></g>
-    <g class="plan-zone" data-zone="ZEC6"  onclick="planZoneClick('ZEC6')"> <rect x="263" y="298" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="290" y="312" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC6</text></g>
-    <g class="plan-zone" data-zone="ZEC5"  onclick="planZoneClick('ZEC5')"> <rect x="321" y="298" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="348" y="312" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC5</text></g>
-    <g class="plan-zone" data-zone="ZEC4"  onclick="planZoneClick('ZEC4')"> <rect x="379" y="298" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="406" y="312" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC4</text></g>
-    <g class="plan-zone" data-zone="ZEC3"  onclick="planZoneClick('ZEC3')"> <rect x="263" y="321" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="290" y="335" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC3</text></g>
-    <g class="plan-zone" data-zone="ZEC2"  onclick="planZoneClick('ZEC2')"> <rect x="321" y="321" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="348" y="335" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC2</text></g>
-    <g class="plan-zone" data-zone="ZEC1"  onclick="planZoneClick('ZEC1')"> <rect x="379" y="321" width="55" height="20" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="406" y="335" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="7" font-family="Bebas Neue,sans-serif">ZEC1</text></g>
+    <!-- ZEC alignées x=418, niveau milieu -->
+    <g class="plan-zone" data-zone="ZEC10" onclick="planZoneClick('ZEC10')"><rect x="418" y="392" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="462" y="413" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 10</text></g>
+    <g class="plan-zone" data-zone="ZEC9"  onclick="planZoneClick('ZEC9')"> <rect x="510" y="392" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="554" y="413" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 9</text></g>
+    <g class="plan-zone" data-zone="ZEC8"  onclick="planZoneClick('ZEC8')"> <rect x="418" y="429" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="462" y="450" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 8</text></g>
+    <g class="plan-zone" data-zone="ZEC7"  onclick="planZoneClick('ZEC7')"> <rect x="510" y="429" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="554" y="450" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 7</text></g>
+    <g class="plan-zone" data-zone="ZEC6"  onclick="planZoneClick('ZEC6')"> <rect x="418" y="475" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="462" y="496" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 6</text></g>
+    <g class="plan-zone" data-zone="ZEC5"  onclick="planZoneClick('ZEC5')"> <rect x="510" y="475" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="554" y="496" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 5</text></g>
+    <g class="plan-zone" data-zone="ZEC4"  onclick="planZoneClick('ZEC4')"> <rect x="602" y="475" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="646" y="496" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 4</text></g>
+    <g class="plan-zone" data-zone="ZEC3"  onclick="planZoneClick('ZEC3')"> <rect x="418" y="512" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="462" y="533" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 3</text></g>
+    <g class="plan-zone" data-zone="ZEC2"  onclick="planZoneClick('ZEC2')"> <rect x="510" y="512" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="554" y="533" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 2</text></g>
+    <g class="plan-zone" data-zone="ZEC1"  onclick="planZoneClick('ZEC1')"> <rect x="602" y="512" width="88" height="33" rx="2" class="zone-rect" fill="#1a0a2e" stroke="#a78bfa"/><text x="646" y="533" text-anchor="middle" class="zone-label" fill="#c4b5fd" font-size="11" font-family="Bebas Neue,sans-serif">ZEC 1</text></g>
 
-    <!-- ═══ BAS : ZD (violet) + ZE (jaune) + RACK/ZEO ═══ -->
-    <rect x="5" y="350" width="258" height="260" rx="2" fill="#120a20" stroke="#7c3aed" stroke-width="1"/>
-    <g class="plan-zone" data-zone="ZD10" onclick="planZoneClick('ZD10')"><rect x="10"  y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="21"  y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,21,482)">ZD 10</text></g>
-    <g class="plan-zone" data-zone="ZD9"  onclick="planZoneClick('ZD9')"> <rect x="35"  y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="46"  y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,46,482)">ZD 9</text></g>
-    <g class="plan-zone" data-zone="ZD8"  onclick="planZoneClick('ZD8')"> <rect x="60"  y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="71"  y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,71,482)">ZD 8</text></g>
-    <g class="plan-zone" data-zone="ZD7"  onclick="planZoneClick('ZD7')"> <rect x="85"  y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="96"  y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,96,482)">ZD 7</text></g>
-    <g class="plan-zone" data-zone="ZD6"  onclick="planZoneClick('ZD6')"> <rect x="110" y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="121" y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,121,482)">ZD 6</text></g>
-    <g class="plan-zone" data-zone="ZD5"  onclick="planZoneClick('ZD5')"> <rect x="135" y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="146" y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,146,482)">ZD 5</text></g>
-    <g class="plan-zone" data-zone="ZD4"  onclick="planZoneClick('ZD4')"> <rect x="160" y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="171" y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,171,482)">ZD 4</text></g>
-    <g class="plan-zone" data-zone="ZD3"  onclick="planZoneClick('ZD3')"> <rect x="185" y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="196" y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,196,482)">ZD 3</text></g>
-    <g class="plan-zone" data-zone="ZD2"  onclick="planZoneClick('ZD2')"> <rect x="210" y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="221" y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,221,482)">ZD 2</text></g>
-    <g class="plan-zone" data-zone="ZD1"  onclick="planZoneClick('ZD1')"> <rect x="235" y="354" width="22" height="252" rx="1" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="246" y="482" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="6" font-family="Bebas Neue,sans-serif" transform="rotate(-90,246,482)">ZD 1</text></g>
+    <!-- ═══ BAS : ZD (violet) -->
+    <rect x="8" y="560" width="410" height="420" rx="3" fill="#120a20" stroke="#7c3aed" stroke-width="1.5"/>
+    <g class="plan-zone" data-zone="ZD10" onclick="planZoneClick('ZD10')"><rect x="15"  y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="33"  y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,33,772)">ZD 10</text></g>
+    <g class="plan-zone" data-zone="ZD9"  onclick="planZoneClick('ZD9')"> <rect x="55"  y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="73"  y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,73,772)">ZD 9</text></g>
+    <g class="plan-zone" data-zone="ZD8"  onclick="planZoneClick('ZD8')"> <rect x="95"  y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="113" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,113,772)">ZD 8</text></g>
+    <g class="plan-zone" data-zone="ZD7"  onclick="planZoneClick('ZD7')"> <rect x="135" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="153" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,153,772)">ZD 7</text></g>
+    <g class="plan-zone" data-zone="ZD6"  onclick="planZoneClick('ZD6')"> <rect x="175" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="193" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,193,772)">ZD 6</text></g>
+    <g class="plan-zone" data-zone="ZD5"  onclick="planZoneClick('ZD5')"> <rect x="215" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="233" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,233,772)">ZD 5</text></g>
+    <g class="plan-zone" data-zone="ZD4"  onclick="planZoneClick('ZD4')"> <rect x="255" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="273" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,273,772)">ZD 4</text></g>
+    <g class="plan-zone" data-zone="ZD3"  onclick="planZoneClick('ZD3')"> <rect x="295" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="313" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,313,772)">ZD 3</text></g>
+    <g class="plan-zone" data-zone="ZD2"  onclick="planZoneClick('ZD2')"> <rect x="335" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="353" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,353,772)">ZD 2</text></g>
+    <g class="plan-zone" data-zone="ZD1"  onclick="planZoneClick('ZD1')"> <rect x="375" y="568" width="36" height="404" rx="2" class="zone-rect" fill="#1a0a3c" stroke="#7c3aed"/><text x="393" y="772" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="10" font-family="Bebas Neue,sans-serif" transform="rotate(-90,393,772)">ZD 1</text></g>
 
     <!-- ZE1→ZE12 (jaune) -->
-    <rect x="263" y="350" width="210" height="260" rx="2" fill="#1a1000" stroke="#854d0e" stroke-width="1"/>
-    <g class="plan-zone" data-zone="ZE12" onclick="planZoneClick('ZE12')"><rect x="266" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="273" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,273,482)">ZE 12</text></g>
-    <g class="plan-zone" data-zone="ZE11" onclick="planZoneClick('ZE11')"><rect x="284" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="291" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,291,482)">ZE 11</text></g>
-    <g class="plan-zone" data-zone="ZE10" onclick="planZoneClick('ZE10')"><rect x="302" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="309" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,309,482)">ZE 10</text></g>
-    <g class="plan-zone" data-zone="ZE9"  onclick="planZoneClick('ZE9')"> <rect x="320" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="327" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,327,482)">ZE 9</text></g>
-    <g class="plan-zone" data-zone="ZE8"  onclick="planZoneClick('ZE8')"> <rect x="338" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="345" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,345,482)">ZE 8</text></g>
-    <g class="plan-zone" data-zone="ZE7"  onclick="planZoneClick('ZE7')"> <rect x="356" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="363" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,363,482)">ZE 7</text></g>
-    <g class="plan-zone" data-zone="ZE6"  onclick="planZoneClick('ZE6')"> <rect x="374" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="381" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,381,482)">ZE 6</text></g>
-    <g class="plan-zone" data-zone="ZE5"  onclick="planZoneClick('ZE5')"> <rect x="392" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="399" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,399,482)">ZE 5</text></g>
-    <g class="plan-zone" data-zone="ZE4"  onclick="planZoneClick('ZE4')"> <rect x="410" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="417" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,417,482)">ZE 4</text></g>
-    <g class="plan-zone" data-zone="ZE3"  onclick="planZoneClick('ZE3')"> <rect x="428" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="435" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,435,482)">ZE 3</text></g>
-    <g class="plan-zone" data-zone="ZE2"  onclick="planZoneClick('ZE2')"> <rect x="446" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="453" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,453,482)">ZE 2</text></g>
-    <g class="plan-zone" data-zone="ZE1"  onclick="planZoneClick('ZE1')"> <rect x="464" y="354" width="15" height="252" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="471" y="482" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="5" font-family="Bebas Neue,sans-serif" transform="rotate(-90,471,482)">ZE 1</text></g>
+    <rect x="418" y="560" width="335" height="420" rx="3" fill="#1a1000" stroke="#854d0e" stroke-width="1.5"/>
+    <g class="plan-zone" data-zone="ZE12" onclick="planZoneClick('ZE12')"><rect x="424" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="436" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,436,772)">ZE 12</text></g>
+    <g class="plan-zone" data-zone="ZE11" onclick="planZoneClick('ZE11')"><rect x="452" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="464" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,464,772)">ZE 11</text></g>
+    <g class="plan-zone" data-zone="ZE10" onclick="planZoneClick('ZE10')"><rect x="480" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="492" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,492,772)">ZE 10</text></g>
+    <g class="plan-zone" data-zone="ZE9"  onclick="planZoneClick('ZE9')"> <rect x="508" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="520" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,520,772)">ZE 9</text></g>
+    <g class="plan-zone" data-zone="ZE8"  onclick="planZoneClick('ZE8')"> <rect x="536" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="548" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,548,772)">ZE 8</text></g>
+    <g class="plan-zone" data-zone="ZE7"  onclick="planZoneClick('ZE7')"> <rect x="564" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="576" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,576,772)">ZE 7</text></g>
+    <g class="plan-zone" data-zone="ZE6"  onclick="planZoneClick('ZE6')"> <rect x="592" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="604" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,604,772)">ZE 6</text></g>
+    <g class="plan-zone" data-zone="ZE5"  onclick="planZoneClick('ZE5')"> <rect x="620" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="632" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,632,772)">ZE 5</text></g>
+    <g class="plan-zone" data-zone="ZE4"  onclick="planZoneClick('ZE4')"> <rect x="648" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="660" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,660,772)">ZE 4</text></g>
+    <g class="plan-zone" data-zone="ZE3"  onclick="planZoneClick('ZE3')"> <rect x="676" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="688" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,688,772)">ZE 3</text></g>
+    <g class="plan-zone" data-zone="ZE2"  onclick="planZoneClick('ZE2')"> <rect x="704" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="716" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,716,772)">ZE 2</text></g>
+    <g class="plan-zone" data-zone="ZE1"  onclick="planZoneClick('ZE1')"> <rect x="732" y="568" width="25" height="404" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/><text x="744" y="772" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif" transform="rotate(-90,744,772)">ZE 1</text></g>
 
-    <!-- RACK PEINTURE / ZEO (unique, à droite de ZE1) -->
-    <rect x="481" y="350" width="55" height="130" rx="1" fill="#0f172a" stroke="#475569"/>
-    <text x="508" y="403" text-anchor="middle" fill="#64748b" font-size="6" font-family="sans-serif">RACK</text>
-    <text x="508" y="415" text-anchor="middle" fill="#64748b" font-size="6" font-family="sans-serif">PEINTURE</text>
-    <line x1="481" y1="480" x2="536" y2="480" stroke="#475569" stroke-width="1"/>
+    <!-- RACK PEINTURE / ZEO à droite de ZE1 -->
+    <rect x="760" y="560" width="88" height="210" rx="2" fill="#0f172a" stroke="#475569"/>
+    <text x="804" y="648" text-anchor="middle" fill="#64748b" font-size="10" font-family="sans-serif">RACK</text>
+    <text x="804" y="663" text-anchor="middle" fill="#64748b" font-size="10" font-family="sans-serif">PEINTURE</text>
+    <line x1="760" y1="770" x2="848" y2="770" stroke="#475569" stroke-width="1.5"/>
     <g class="plan-zone" data-zone="ZEO" onclick="planZoneClick('ZEO')">
-      <rect x="481" y="480" width="55" height="130" rx="1" class="zone-rect" fill="#1c1200" stroke="#d97706"/>
-      <text x="508" y="550" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="9" font-family="Bebas Neue,sans-serif">ZEO</text>
+      <rect x="760" y="770" width="88" height="210" rx="2" class="zone-rect" fill="#1c1200" stroke="#d97706"/>
+      <text x="804" y="878" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="14" font-family="Bebas Neue,sans-serif">ZEO</text>
     </g>
 
     <!-- ═══ DROITE : ZA + Bureaux + Allée + Halls + ZF/H8 + Z1-9 ═══ -->
     <g class="plan-zone" data-zone="ZA" onclick="planZoneClick('ZA')">
-      <rect x="560" y="5" width="130" height="38" rx="3" class="zone-rect" fill="#1a1000" stroke="#f97316" stroke-width="2"/>
-      <text x="625" y="29" text-anchor="middle" class="zone-label" fill="#f97316" font-size="16" font-family="Bebas Neue,sans-serif" font-weight="bold" letter-spacing="2">Z A</text>
+      <rect x="895" y="8" width="205" height="60" rx="4" class="zone-rect" fill="#1a1000" stroke="#f97316" stroke-width="2.5"/>
+      <text x="997" y="46" text-anchor="middle" class="zone-label" fill="#f97316" font-size="24" font-family="Bebas Neue,sans-serif" letter-spacing="3">Z A</text>
     </g>
-    <rect x="560" y="47" width="220" height="30" rx="2" fill="#0a1220" stroke="#1e2d40"/>
-    <text x="670" y="66" text-anchor="middle" fill="#475569" font-size="10" font-family="sans-serif">BUREAU</text>
-    <rect x="560" y="81" width="220" height="22" rx="2" fill="#0a1220" stroke="#2d3f5c"/>
-    <text x="670" y="96" text-anchor="middle" fill="#334155" font-size="9" font-family="sans-serif">ALLÉE</text>
+    <rect x="895" y="75"  width="350" height="48" rx="3" fill="#0a1220" stroke="#1e2d40"/>
+    <text x="1070" y="103" text-anchor="middle" fill="#64748b" font-size="14" font-family="sans-serif">BUREAU</text>
+    <rect x="895" y="128" width="350" height="35" rx="3" fill="#0a1220" stroke="#2d3f5c"/>
+    <text x="1070" y="150" text-anchor="middle" fill="#334155" font-size="13" font-family="sans-serif">ALLÉE</text>
 
     <g class="plan-zone" data-zone="HALL4" onclick="planZoneClick('HALL4')">
-      <rect x="560" y="107" width="220" height="65" rx="3" class="zone-rect" fill="#0a1628" stroke="#3b82f6" stroke-width="1.5"/>
-      <text x="670" y="146" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="13" font-family="Bebas Neue,sans-serif">HALL 4</text>
+      <rect x="895" y="170" width="350" height="105" rx="3" class="zone-rect" fill="#0a1628" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="1070" y="230" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="20" font-family="Bebas Neue,sans-serif">HALL 4</text>
     </g>
     <g class="plan-zone" data-zone="HALL5" onclick="planZoneClick('HALL5')">
-      <rect x="560" y="176" width="220" height="75" rx="3" class="zone-rect" fill="#120a20" stroke="#7c3aed" stroke-width="1.5"/>
-      <text x="670" y="220" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="13" font-family="Bebas Neue,sans-serif">HALL 5</text>
+      <rect x="895" y="280" width="350" height="120" rx="3" class="zone-rect" fill="#120a20" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="1070" y="348" text-anchor="middle" class="zone-label" fill="#a78bfa" font-size="20" font-family="Bebas Neue,sans-serif">HALL 5</text>
     </g>
     <g class="plan-zone" data-zone="HALL6" onclick="planZoneClick('HALL6')">
-      <rect x="560" y="255" width="220" height="75" rx="3" class="zone-rect" fill="#1a1000" stroke="#d97706" stroke-width="1.5"/>
-      <text x="670" y="299" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="13" font-family="Bebas Neue,sans-serif">HALL 6</text>
+      <rect x="895" y="406" width="350" height="120" rx="3" class="zone-rect" fill="#1a1000" stroke="#d97706" stroke-width="1.5"/>
+      <text x="1070" y="474" text-anchor="middle" class="zone-label" fill="#fbbf24" font-size="20" font-family="Bebas Neue,sans-serif">HALL 6</text>
     </g>
     <g class="plan-zone" data-zone="HALL7" onclick="planZoneClick('HALL7')">
-      <rect x="560" y="334" width="220" height="80" rx="3" class="zone-rect" fill="#0d2010" stroke="#16a34a" stroke-width="1.5"/>
-      <text x="670" y="380" text-anchor="middle" class="zone-label" fill="#4ade80" font-size="13" font-family="Bebas Neue,sans-serif">HALL 7</text>
+      <rect x="895" y="532" width="350" height="128" rx="3" class="zone-rect" fill="#0d2010" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="1070" y="604" text-anchor="middle" class="zone-label" fill="#4ade80" font-size="20" font-family="Bebas Neue,sans-serif">HALL 7</text>
     </g>
     <g class="plan-zone" data-zone="ZF" onclick="planZoneClick('ZF')">
-      <rect x="560" y="418" width="155" height="115" rx="3" class="zone-rect" fill="#1a1000" stroke="#f97316" stroke-width="1.5"/>
-      <text x="637" y="482" text-anchor="middle" class="zone-label" fill="#f97316" font-size="16" font-family="Bebas Neue,sans-serif" font-weight="bold">ZF</text>
+      <rect x="895" y="666" width="247" height="184" rx="3" class="zone-rect" fill="#1a1000" stroke="#f97316" stroke-width="2"/>
+      <text x="1018" y="762" text-anchor="middle" class="zone-label" fill="#f97316" font-size="28" font-family="Bebas Neue,sans-serif" letter-spacing="2">ZF</text>
     </g>
     <g class="plan-zone" data-zone="HALL8" onclick="planZoneClick('HALL8')">
-      <rect x="719" y="418" width="61" height="115" rx="3" class="zone-rect" fill="#0a1628" stroke="#3b82f6" stroke-width="1.5"/>
-      <text x="749" y="482" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="9" font-family="Bebas Neue,sans-serif">HALL 8</text>
+      <rect x="1147" y="666" width="98" height="184" rx="3" class="zone-rect" fill="#0a1628" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="1196" y="762" text-anchor="middle" class="zone-label" fill="#60a5fa" font-size="14" font-family="Bebas Neue,sans-serif">HALL 8</text>
     </g>
 
-    <!-- Z9→Z1 colonne droite (orange) -->
-    <g class="plan-zone" data-zone="Z9" onclick="planZoneClick('Z9')"><rect x="784" y="47"  width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="75"  text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z9</text></g>
-    <g class="plan-zone" data-zone="Z8" onclick="planZoneClick('Z8')"><rect x="784" y="99"  width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="127" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z8</text></g>
-    <g class="plan-zone" data-zone="Z7" onclick="planZoneClick('Z7')"><rect x="784" y="151" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="179" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z7</text></g>
-    <g class="plan-zone" data-zone="Z6" onclick="planZoneClick('Z6')"><rect x="784" y="203" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="231" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z6</text></g>
-    <g class="plan-zone" data-zone="Z5" onclick="planZoneClick('Z5')"><rect x="784" y="255" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="283" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z5</text></g>
-    <g class="plan-zone" data-zone="Z4" onclick="planZoneClick('Z4')"><rect x="784" y="307" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="335" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z4</text></g>
-    <g class="plan-zone" data-zone="Z3" onclick="planZoneClick('Z3')"><rect x="784" y="359" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="387" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z3</text></g>
-    <g class="plan-zone" data-zone="Z2" onclick="planZoneClick('Z2')"><rect x="784" y="411" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="439" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z2</text></g>
-    <g class="plan-zone" data-zone="Z1" onclick="planZoneClick('Z1')"><rect x="784" y="463" width="38" height="48" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="803" y="491" text-anchor="middle" class="zone-label" fill="#f97316" font-size="11" font-family="Bebas Neue,sans-serif" font-weight="bold">Z1</text></g>
+    <!-- Z9→Z1 colonne (orange) -->
+    <g class="plan-zone" data-zone="Z9" onclick="planZoneClick('Z9')"><rect x="1250" y="75"  width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="120" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z9</text></g>
+    <g class="plan-zone" data-zone="Z8" onclick="planZoneClick('Z8')"><rect x="1250" y="156" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="201" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z8</text></g>
+    <g class="plan-zone" data-zone="Z7" onclick="planZoneClick('Z7')"><rect x="1250" y="237" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="282" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z7</text></g>
+    <g class="plan-zone" data-zone="Z6" onclick="planZoneClick('Z6')"><rect x="1250" y="318" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="363" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z6</text></g>
+    <g class="plan-zone" data-zone="Z5" onclick="planZoneClick('Z5')"><rect x="1250" y="399" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="444" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z5</text></g>
+    <g class="plan-zone" data-zone="Z4" onclick="planZoneClick('Z4')"><rect x="1250" y="480" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="525" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z4</text></g>
+    <g class="plan-zone" data-zone="Z3" onclick="planZoneClick('Z3')"><rect x="1250" y="561" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="606" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z3</text></g>
+    <g class="plan-zone" data-zone="Z2" onclick="planZoneClick('Z2')"><rect x="1250" y="642" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="687" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z2</text></g>
+    <g class="plan-zone" data-zone="Z1" onclick="planZoneClick('Z1')"><rect x="1250" y="723" width="60" height="76" rx="2" class="zone-rect" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/><text x="1280" y="768" text-anchor="middle" class="zone-label" fill="#f97316" font-size="17" font-family="Bebas Neue,sans-serif" font-weight="bold">Z1</text></g>
 
-    <!-- Bureaux droite -->
-    <rect x="826" y="47" width="22" height="464" rx="2" fill="#0a1220" stroke="#1e2d40"/>
-    <text x="837" y="285" text-anchor="middle" fill="#334155" font-size="7" font-family="sans-serif" transform="rotate(-90,837,285)">B U R E A U</text>
+    <!-- Bureaux colonne droite -->
+    <rect x="1315" y="75" width="35" height="724" rx="3" fill="#0a1220" stroke="#1e2d40"/>
+    <text x="1332" y="440" text-anchor="middle" fill="#334155" font-size="11" font-family="sans-serif" transform="rotate(-90,1332,440)">B U R E A U X</text>
 
   </svg>
   </div>
 
-  <!-- Popup zone -->
   <div id="planOverlay" class="hidden" onclick="document.getElementById('planPopup').classList.add('hidden');this.classList.add('hidden')"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199"></div>
   <div id="planPopup" class="hidden" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--orange);border-radius:8px;padding:20px;min-width:300px;max-width:480px;max-height:80vh;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
