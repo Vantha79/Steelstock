@@ -905,6 +905,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Boutons
   document.getElementById('btnAdd').addEventListener('click', openAdd);
   document.getElementById('btnCancel').addEventListener('click', closeModal);
+
+  // ── Livraisons ──
+  document.getElementById('btnAddLivraison')?.addEventListener('click', () => openLivraisonForm());
+  document.getElementById('btnSaveLivraison')?.addEventListener('click', saveLivraisonForm);
+  document.getElementById('btnCancelLivraison')?.addEventListener('click', () => {
+    document.getElementById('livraisonForm').classList.add('hidden');
+    editingLivraisonId = null;
+  });
+  document.getElementById('livraisonSearch')?.addEventListener('input', e => renderLivraisons(e.target.value));
   // Bouton prix marché dans le formulaire
   // _prixMarcheBase est déclaré globalement plus bas
 
@@ -1075,6 +1084,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSelectionBar();
   });
   // Annuler sélection
+  // Livraisons
+  document.getElementById('btnAddLivraison').addEventListener('click', () => {
+    _editingLivraisonId = null;
+    document.getElementById('livDate').value = '';
+    document.getElementById('livFournisseur').value = '';
+    document.getElementById('livAffaire').value = '';
+    document.getElementById('livStatut').value = 'En attente';
+    document.getElementById('livNotes').value = '';
+    document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
+    document.getElementById('livraisonForm').classList.remove('hidden');
+  });
+  document.getElementById('btnCancelLivraison').addEventListener('click', () => {
+    document.getElementById('livraisonForm').classList.add('hidden');
+    _editingLivraisonId = null;
+  });
+  document.getElementById('btnSaveLivraison').addEventListener('click', () => {
+    const date        = document.getElementById('livDate').value;
+    const fournisseur = document.getElementById('livFournisseur').value.trim();
+    const affaire     = document.getElementById('livAffaire').value.trim();
+    const statut      = document.getElementById('livStatut').value;
+    const notes       = document.getElementById('livNotes').value.trim();
+    if (!date || !fournisseur || !affaire) {
+      showToast('⚠️ Date, fournisseur et affaire sont obligatoires'); return;
+    }
+    const livraisons = loadLivraisons();
+    if (_editingLivraisonId) {
+      const idx = livraisons.findIndex(x => x.id === _editingLivraisonId);
+      if (idx >= 0) livraisons[idx] = { ...livraisons[idx], date, fournisseur, affaire, statut, notes };
+    } else {
+      livraisons.push({ id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() });
+    }
+    saveLivraisons(livraisons);
+    document.getElementById('livraisonForm').classList.add('hidden');
+    _editingLivraisonId = null;
+    renderLivraisons();
+    showToast('✅ Livraison sauvegardée');
+  });
+  document.getElementById('livraisonSearch').addEventListener('input', renderLivraisons);
+
   document.getElementById('btnClearSelection').addEventListener('click', () => {
     state.selectedIds = [];
     renderTable();
@@ -1113,6 +1161,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tab === 'qr') setTimeout(renderQRTab, 50);
       if (btn.dataset.tab === 'plan') setTimeout(renderPlan, 50);
+      if (btn.dataset.tab === 'livraison') setTimeout(renderLivraisons, 50);
+      if (btn.dataset.tab === 'livraison') setTimeout(renderLivraisons, 50);
     });
   });
 
@@ -2033,6 +2083,229 @@ function planZoneClick(zone) {
   overlay.classList.remove('hidden');
 }
 window.planZoneClick = planZoneClick;
+
+
+// ============================================================
+//  LIVRAISONS
+// ============================================================
+const LIVRAISON_KEY = 'steelstock_livraisons';
+
+function loadLivraisons() {
+  try { return JSON.parse(localStorage.getItem(LIVRAISON_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveLivraisons(data) {
+  localStorage.setItem(LIVRAISON_KEY, JSON.stringify(data));
+}
+
+function renderLivraisons(filter = '') {
+  let livs = loadLivraisons();
+  if (filter) {
+    const q = filter.toLowerCase();
+    livs = livs.filter(l =>
+      [l.fournisseur, l.affaire, l.note, l.statut].join(' ').toLowerCase().includes(q)
+    );
+  }
+  livs.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const tbody = document.getElementById('livraisonTableBody');
+  if (!tbody) return;
+
+  if (livs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">Aucune livraison enregistrée</td></tr>';
+    return;
+  }
+
+  const statutColor = {
+    'En attente': '#fbbf24',
+    'Confirmée':  '#60a5fa',
+    'Livrée':     '#4ade80',
+    'Annulée':    '#f87171',
+  };
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  tbody.innerHTML = livs.map(l => {
+    const d = new Date(l.date);
+    const diff = Math.ceil((d - today) / (1000*60*60*24));
+    let dateStyle = '';
+    let badge = '';
+    if (l.statut !== 'Livrée' && l.statut !== 'Annulée') {
+      if (diff < 0)       { dateStyle = 'color:#f87171;font-weight:700'; badge = ' <span style="font-size:9px;background:#7f1d1d;color:#f87171;padding:1px 4px;border-radius:3px">EN RETARD</span>'; }
+      else if (diff === 0){ dateStyle = "color:#fbbf24;font-weight:700"; badge = " <span style=\"font-size:9px;background:#78350f;color:#fbbf24;padding:1px 4px;border-radius:3px\">AUJ</span>"; }
+      else if (diff <= 3) { dateStyle = 'color:#fb923c;font-weight:700'; badge = ` <span style="font-size:9px;background:#7c2d12;color:#fb923c;padding:1px 4px;border-radius:3px">J-${diff}</span>`; }
+    }
+    const color = statutColor[l.statut] || '#94a3b8';
+    return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onmouseover="this.style.background='rgba(249,115,22,0.05)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 12px;${dateStyle}">${formatDate(l.date)}${badge}</td>
+      <td style="padding:10px 12px;font-weight:600;color:var(--text)">${l.fournisseur}</td>
+      <td style="padding:10px 12px;color:var(--text)">${l.affaire}</td>
+      <td style="padding:10px 12px"><span style="background:${color}22;color:${color};border:1px solid ${color};border-radius:12px;padding:2px 10px;font-size:11px">${l.statut}</span></td>
+      <td style="padding:10px 12px;color:var(--text-muted);font-size:12px">${l.note || '—'}</td>
+      <td style="padding:10px 12px;text-align:center;white-space:nowrap">
+        <button class="btn-secondary" onclick="editLivraison('${l.id}')" style="padding:4px 10px;font-size:11px;margin-right:4px">✎</button>
+        <button class="btn-danger"    onclick="deleteLivraison('${l.id}')" style="padding:4px 10px;font-size:11px">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y,m,d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+let editingLivraisonId = null;
+
+function openLivraisonForm(id = null) {
+  editingLivraisonId = id;
+  const form = document.getElementById('livraisonForm');
+  const title = document.getElementById('livraisonFormTitle');
+  form.classList.remove('hidden');
+  if (id) {
+    const liv = loadLivraisons().find(l => l.id === id);
+    if (liv) {
+      document.getElementById('liv-date').value = liv.date;
+      document.getElementById('liv-fournisseur').value = liv.fournisseur;
+      document.getElementById('liv-affaire').value = liv.affaire;
+      document.getElementById('liv-statut').value = liv.statut;
+      document.getElementById('liv-note').value = liv.note || '';
+      title.textContent = 'MODIFIER LA LIVRAISON';
+    }
+  } else {
+    document.getElementById('liv-date').value = '';
+    document.getElementById('liv-fournisseur').value = '';
+    document.getElementById('liv-affaire').value = '';
+    document.getElementById('liv-statut').value = 'En attente';
+    document.getElementById('liv-note').value = '';
+    title.textContent = 'NOUVELLE LIVRAISON';
+  }
+  document.getElementById('liv-date').focus();
+}
+
+function saveLivraisonForm() {
+  const date        = document.getElementById('liv-date').value;
+  const fournisseur = document.getElementById('liv-fournisseur').value.trim();
+  const affaire     = document.getElementById('liv-affaire').value.trim();
+  const statut      = document.getElementById('liv-statut').value;
+  const note        = document.getElementById('liv-note').value.trim();
+
+  if (!date || !fournisseur || !affaire) {
+    showToast('⚠️ Date, fournisseur et affaire sont obligatoires'); return;
+  }
+
+  let livs = loadLivraisons();
+  if (editingLivraisonId) {
+    const idx = livs.findIndex(l => l.id === editingLivraisonId);
+    if (idx >= 0) livs[idx] = { ...livs[idx], date, fournisseur, affaire, statut, note };
+  } else {
+    livs.push({ id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, note, creePar: state.userName || '', dateCreation: new Date().toISOString() });
+  }
+  saveLivraisons(livs);
+  document.getElementById('livraisonForm').classList.add('hidden');
+  editingLivraisonId = null;
+  renderLivraisons(document.getElementById('livraisonSearch')?.value || '');
+  showToast('✅ Livraison sauvegardée');
+}
+
+function deleteLivraison(id) {
+  if (!confirm('Supprimer cette livraison ?')) return;
+  let livs = loadLivraisons().filter(l => l.id !== id);
+  saveLivraisons(livs);
+  renderLivraisons();
+  showToast('🗑 Livraison supprimée');
+}
+
+function editLivraison(id) { openLivraisonForm(id); }
+window.editLivraison   = editLivraison;
+window.deleteLivraison = deleteLivraison;
+
+
+// ============================================================
+//  LIVRAISONS
+// ============================================================
+function loadLivraisons() {
+  const raw = localStorage.getItem('steelstock_livraisons');
+  return raw ? JSON.parse(raw) : [];
+}
+function saveLivraisons(livraisons) {
+  localStorage.setItem('steelstock_livraisons', JSON.stringify(livraisons));
+}
+
+let _editingLivraisonId = null;
+
+function renderLivraisons() {
+  const livraisons = loadLivraisons();
+  const search = document.getElementById('livraisonSearch')?.value?.toLowerCase() || '';
+  const tbody = document.getElementById('livraisonTableBody');
+  if (!tbody) return;
+
+  const filtered = livraisons.filter(l =>
+    !search || [l.fournisseur, l.affaire, l.notes, l.statut].join(' ').toLowerCase().includes(search)
+  ).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">Aucune livraison trouvée</td></tr>';
+    return;
+  }
+
+  const statutColors = {
+    'En attente': '#fbbf24',
+    'Confirmée':  '#34d399',
+    'Livrée':     '#60a5fa',
+    'Annulée':    '#f87171',
+  };
+
+  // Trier : futures en premier, passées en gris
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  tbody.innerHTML = filtered.map(l => {
+    const d = new Date(l.date);
+    const isPast = d < today;
+    const isToday = d.getTime() === today.getTime();
+    const isSoon = !isPast && (d - today) / 86400000 <= 7;
+    const rowStyle = isPast ? 'opacity:0.5' : isToday ? 'background:rgba(249,115,22,0.1)' : isSoon ? 'background:rgba(251,191,36,0.07)' : '';
+    const color = statutColors[l.statut] || '#94a3b8';
+    const dateStr = new Date(l.date + 'T12:00:00').toLocaleDateString('fr-FR', {weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;${rowStyle}">
+      <td style="padding:10px 12px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--orange)':isPast?'var(--text-muted)':'var(--text)'}">${dateStr}${isToday?' 📅':isSoon?' ⚠️':''}</td>
+      <td style="padding:10px 12px;color:var(--text)">${l.fournisseur}</td>
+      <td style="padding:10px 12px;color:var(--orange);font-weight:600">${l.affaire}</td>
+      <td style="padding:10px 12px"><span style="background:${color}22;color:${color};border:1px solid ${color};padding:2px 8px;border-radius:20px;font-size:11px">${l.statut}</span></td>
+      <td style="padding:10px 12px;color:var(--text-muted);font-size:12px">${l.notes||'—'}</td>
+      <td style="padding:10px 12px;text-align:center;display:flex;gap:6px;justify-content:center">
+        <button onclick="editLivraison('${l.id}')" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px">✎</button>
+        <button onclick="deleteLivraison('${l.id}')" style="background:none;border:1px solid #f87171;color:#f87171;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function editLivraison(id) {
+  const livraisons = loadLivraisons();
+  const l = livraisons.find(x => x.id === id);
+  if (!l) return;
+  _editingLivraisonId = id;
+  document.getElementById('livDate').value = l.date;
+  document.getElementById('livFournisseur').value = l.fournisseur;
+  document.getElementById('livAffaire').value = l.affaire;
+  document.getElementById('livStatut').value = l.statut;
+  document.getElementById('livNotes').value = l.notes || '';
+  document.getElementById('livraisonFormTitle').textContent = 'MODIFIER LA LIVRAISON';
+  document.getElementById('livraisonForm').classList.remove('hidden');
+  document.getElementById('livraisonForm').scrollIntoView({behavior:'smooth'});
+}
+window.editLivraison = editLivraison;
+
+function deleteLivraison(id) {
+  if (!confirm('Supprimer cette livraison ?')) return;
+  const livraisons = loadLivraisons().filter(x => x.id !== id);
+  saveLivraisons(livraisons);
+  renderLivraisons();
+}
+window.deleteLivraison = deleteLivraison;
 
 let _prixMarcheBase = null; // prix brut marché sans marge (global)
 
