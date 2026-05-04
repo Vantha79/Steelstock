@@ -908,7 +908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Livraisons ──
   document.getElementById('btnAddLivraison')?.addEventListener('click', () => openLivraisonForm());
-  document.getElementById('btnSaveLivraison')?.addEventListener('click', saveLivraisonForm);
+  // btnSaveLivraison handled below
   document.getElementById('btnCancelLivraison')?.addEventListener('click', () => {
     document.getElementById('livraisonForm').classList.add('hidden');
     editingLivraisonId = null;
@@ -1099,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('livraisonForm').classList.add('hidden');
     _editingLivraisonId = null;
   });
-  document.getElementById('btnSaveLivraison').addEventListener('click', () => {
+  document.getElementById('btnSaveLivraison').addEventListener('click', async () => {
     const date        = document.getElementById('livDate').value;
     const fournisseur = document.getElementById('livFournisseur').value.trim();
     const affaire     = document.getElementById('livAffaire').value.trim();
@@ -1117,9 +1117,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     saveLivraisons(livraisons);
     document.getElementById('livraisonForm').classList.add('hidden');
+    const savedId = _editingLivraisonId;
     _editingLivraisonId = null;
     renderLivraisons();
     showToast('✅ Livraison sauvegardée');
+    // Sync avec Google Sheets
+    const liv = livraisons.find(x => savedId ? String(x.id)===String(savedId) : x.id === livraisons[livraisons.length-1].id);
+    if (liv) await pushLivraison(liv);
   });
   document.getElementById('livraisonSearch').addEventListener('input', renderLivraisons);
 
@@ -1161,8 +1165,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tab === 'qr') setTimeout(renderQRTab, 50);
       if (btn.dataset.tab === 'plan') setTimeout(renderPlan, 50);
-      if (btn.dataset.tab === 'livraison') setTimeout(renderLivraisons, 50);
-      if (btn.dataset.tab === 'livraison') setTimeout(renderLivraisons, 50);
+      if (btn.dataset.tab === 'livraison') { setTimeout(renderLivraisons, 50); setTimeout(syncLivraisons, 200); }
+      if (btn.dataset.tab === 'livraison') { setTimeout(renderLivraisons, 50); setTimeout(syncLivraisons, 200); }
     });
   });
 
@@ -2233,6 +2237,45 @@ function loadLivraisons() {
 function saveLivraisons(livraisons) {
   localStorage.setItem('steelstock_livraisons', JSON.stringify(livraisons));
 }
+async function pushLivraison(livraison) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'saveLivraison', livraison })
+    });
+  } catch(e) { console.warn('pushLivraison error:', e); }
+}
+async function pushDeleteLivraison(id) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deleteLivraison', id })
+    });
+  } catch(e) { console.warn('pushDeleteLivraison error:', e); }
+}
+
+async function pushLivraison(livraison) {
+  if (!state.scriptUrl) return;
+  await sheetRequest('saveLivraison', { livraison });
+}
+
+async function deleteLivraisonFromSheets(id) {
+  if (!state.scriptUrl) return;
+  await sheetRequest('deleteLivraison', { id });
+}
+
+async function syncLivraisons() {
+  if (!state.scriptUrl) return;
+  try {
+    const res = await sheetRequest('getLivraisons', {});
+    if (res && res.livraisons) {
+      saveLivraisons(res.livraisons);
+      renderLivraisons();
+    }
+  } catch(e) {}
+}
 
 let _editingLivraisonId = null;
 
@@ -2285,13 +2328,13 @@ function renderLivraisons() {
 
 function editLivraison(id) {
   const livraisons = loadLivraisons();
-  const l = livraisons.find(x => x.id === id);
-  if (!l) return;
-  _editingLivraisonId = id;
-  document.getElementById('livDate').value = l.date;
-  document.getElementById('livFournisseur').value = l.fournisseur;
-  document.getElementById('livAffaire').value = l.affaire;
-  document.getElementById('livStatut').value = l.statut;
+  const l = livraisons.find(x => String(x.id) === String(id));
+  if (!l) { showToast('Livraison introuvable'); return; }
+  _editingLivraisonId = String(id);
+  document.getElementById('livDate').value = l.date || '';
+  document.getElementById('livFournisseur').value = l.fournisseur || '';
+  document.getElementById('livAffaire').value = l.affaire || '';
+  document.getElementById('livStatut').value = l.statut || 'En attente';
   document.getElementById('livNotes').value = l.notes || '';
   document.getElementById('livraisonFormTitle').textContent = 'MODIFIER LA LIVRAISON';
   document.getElementById('livraisonForm').classList.remove('hidden');
@@ -2299,11 +2342,12 @@ function editLivraison(id) {
 }
 window.editLivraison = editLivraison;
 
-function deleteLivraison(id) {
+async function deleteLivraison(id) {
   if (!confirm('Supprimer cette livraison ?')) return;
-  const livraisons = loadLivraisons().filter(x => x.id !== id);
+  const livraisons = loadLivraisons().filter(x => String(x.id) !== String(id));
   saveLivraisons(livraisons);
   renderLivraisons();
+  await deleteLivraisonFromSheets(id);
 }
 window.deleteLivraison = deleteLivraison;
 
