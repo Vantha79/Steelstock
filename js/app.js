@@ -906,14 +906,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnAdd').addEventListener('click', openAdd);
   document.getElementById('btnCancel').addEventListener('click', closeModal);
 
-  // ── Livraisons ──
-  document.getElementById('btnAddLivraison')?.addEventListener('click', () => openLivraisonForm());
-  // btnSaveLivraison handled below
-  document.getElementById('btnCancelLivraison')?.addEventListener('click', () => {
-    document.getElementById('livraisonForm').classList.add('hidden');
-    editingLivraisonId = null;
-  });
-  document.getElementById('livraisonSearch')?.addEventListener('input', e => renderLivraisons(e.target.value));
+  // Livraisons wired below
   // Bouton prix marché dans le formulaire
   // _prixMarcheBase est déclaré globalement plus bas
 
@@ -1125,7 +1118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const liv = livraisons.find(x => savedId ? String(x.id)===String(savedId) : x.id === livraisons[livraisons.length-1].id);
     if (liv) await pushLivraison(liv);
   });
-  document.getElementById('livraisonSearch').addEventListener('input', renderLivraisons);
+  document.getElementById('livraisonSearch')?.addEventListener('input', e => renderLivraisons(e.target.value));
 
   document.getElementById('btnClearSelection').addEventListener('click', () => {
     state.selectedIds = [];
@@ -2279,9 +2272,9 @@ async function syncLivraisons() {
 
 let _editingLivraisonId = null;
 
-function renderLivraisons() {
+function renderLivraisons(searchOverride) {
   const livraisons = loadLivraisons();
-  const search = document.getElementById('livraisonSearch')?.value?.toLowerCase() || '';
+  const search = (searchOverride !== undefined ? searchOverride : (document.getElementById('livraisonSearch')?.value || '')).toLowerCase();
   const tbody = document.getElementById('livraisonTableBody');
   if (!tbody) return;
 
