@@ -1077,26 +1077,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSelectionBar();
   });
   // Annuler sélection
-  // Livraisons - délégation d'événements (fonctionne même si l'onglet n'est pas visible)
-  document.addEventListener('click', e => {
-    if (e.target && e.target.id === 'btnAddLivraison') {
-      _editingLivraisonId = null;
-      document.getElementById('livDate').value = '';
-      document.getElementById('livFournisseur').value = '';
-      document.getElementById('livAffaire').value = '';
-      document.getElementById('livStatut').value = 'En attente';
-      document.getElementById('livNotes').value = '';
-      document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
-      document.getElementById('livraisonForm').classList.remove('hidden');
-    }
-    if (e.target && e.target.id === 'btnCancelLivraison') {
-      document.getElementById('livraisonForm').classList.add('hidden');
-      _editingLivraisonId = null;
-    }
-  });
-  document.addEventListener('click', async e => {
-    if (!e.target || e.target.id !== 'btnSaveLivraison') return;
-    {
+  // save livraison via onclick HTML
     const date        = document.getElementById('livDate').value;
     const fournisseur = document.getElementById('livFournisseur').value.trim();
     const affaire     = document.getElementById('livAffaire').value.trim();
@@ -1121,11 +1102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sync avec Google Sheets
     const liv = livraisons.find(x => savedId ? String(x.id)===String(savedId) : x.id === livraisons[livraisons.length-1].id);
     if (liv) await pushLivraison(liv);
-    }
-  });
-  document.addEventListener('input', e => {
-    if (e.target && e.target.id === 'livraisonSearch') renderLivraisons(e.target.value);
-  });
 
   document.getElementById('btnClearSelection').addEventListener('click', () => {
     state.selectedIds = [];
@@ -2222,6 +2198,57 @@ function deleteLivraison(id) {
   showToast('🗑 Livraison supprimée');
 }
 
+// Fonctions globales appelées via onclick HTML
+window.ouvrirFormLivraison = function() {
+  _editingLivraisonId = null;
+  document.getElementById('livDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('livFournisseur').value = '';
+  document.getElementById('livAffaire').value = '';
+  document.getElementById('livStatut').value = 'En attente';
+  document.getElementById('livNotes').value = '';
+  document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
+  document.getElementById('livraisonForm').classList.remove('hidden');
+};
+
+window.fermerFormLivraison = function() {
+  document.getElementById('livraisonForm').classList.add('hidden');
+  _editingLivraisonId = null;
+};
+
+window.sauvegarderLivraison = async function() {
+  const date        = document.getElementById('livDate').value;
+  const fournisseur = document.getElementById('livFournisseur').value.trim();
+  const affaire     = document.getElementById('livAffaire').value.trim();
+  const statut      = document.getElementById('livStatut').value;
+  const notes       = document.getElementById('livNotes').value.trim();
+
+  if (!date || !fournisseur || !affaire) {
+    alert('Date, fournisseur et affaire sont obligatoires');
+    return;
+  }
+
+  const livraisons = loadLivraisons();
+  let savedLiv;
+
+  if (_editingLivraisonId) {
+    const idx = livraisons.findIndex(x => x.id === _editingLivraisonId);
+    if (idx >= 0) {
+      livraisons[idx] = { ...livraisons[idx], date, fournisseur, affaire, statut, notes };
+      savedLiv = livraisons[idx];
+    }
+  } else {
+    savedLiv = { id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() };
+    livraisons.push(savedLiv);
+  }
+
+  saveLivraisons(livraisons);
+  document.getElementById('livraisonForm').classList.add('hidden');
+  _editingLivraisonId = null;
+  renderLivraisons();
+  showToast('✅ Livraison sauvegardée');
+  if (savedLiv) pushLivraison(savedLiv);
+};
+
 function editLivraison(id) { openLivraisonForm(id); }
 window.editLivraison   = editLivraison;
 window.deleteLivraison = deleteLivraison;
@@ -2325,6 +2352,57 @@ function renderLivraisons(searchOverride) {
     </tr>`;
   }).join('');
 }
+
+// Fonctions globales appelées via onclick HTML
+window.ouvrirFormLivraison = function() {
+  _editingLivraisonId = null;
+  document.getElementById('livDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('livFournisseur').value = '';
+  document.getElementById('livAffaire').value = '';
+  document.getElementById('livStatut').value = 'En attente';
+  document.getElementById('livNotes').value = '';
+  document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
+  document.getElementById('livraisonForm').classList.remove('hidden');
+};
+
+window.fermerFormLivraison = function() {
+  document.getElementById('livraisonForm').classList.add('hidden');
+  _editingLivraisonId = null;
+};
+
+window.sauvegarderLivraison = async function() {
+  const date        = document.getElementById('livDate').value;
+  const fournisseur = document.getElementById('livFournisseur').value.trim();
+  const affaire     = document.getElementById('livAffaire').value.trim();
+  const statut      = document.getElementById('livStatut').value;
+  const notes       = document.getElementById('livNotes').value.trim();
+
+  if (!date || !fournisseur || !affaire) {
+    alert('Date, fournisseur et affaire sont obligatoires');
+    return;
+  }
+
+  const livraisons = loadLivraisons();
+  let savedLiv;
+
+  if (_editingLivraisonId) {
+    const idx = livraisons.findIndex(x => x.id === _editingLivraisonId);
+    if (idx >= 0) {
+      livraisons[idx] = { ...livraisons[idx], date, fournisseur, affaire, statut, notes };
+      savedLiv = livraisons[idx];
+    }
+  } else {
+    savedLiv = { id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() };
+    livraisons.push(savedLiv);
+  }
+
+  saveLivraisons(livraisons);
+  document.getElementById('livraisonForm').classList.add('hidden');
+  _editingLivraisonId = null;
+  renderLivraisons();
+  showToast('✅ Livraison sauvegardée');
+  if (savedLiv) pushLivraison(savedLiv);
+};
 
 function editLivraison(id) {
   const livraisons = loadLivraisons();
