@@ -706,8 +706,8 @@
 <main id="tab-livraison" class="tab-content">
   <div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:8px 12px">
     <h2 style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f97316;font-size:20px">🚚 LIVRAISONS</h2>
-    <button class="btn-primary" id="btnAddLivraison">+ Ajouter</button>
-    <input type="search" id="livraisonSearch" placeholder="🔍 Fournisseur, affaire..."
+    <button class="btn-primary" onclick="ouvrirFormLivraison()">+ Ajouter</button>
+    <input type="search" id="livraisonSearch" placeholder="🔍 Fournisseur, affaire..." oninput="renderLivraisons(this.value)"
       style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;width:220px"/>
   </div>
 
@@ -743,8 +743,8 @@
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn-primary" id="btnSaveLivraison">💾 Sauvegarder</button>
-      <button class="btn-secondary" id="btnCancelLivraison">Annuler</button>
+      <button class="btn-primary" onclick="sauvegarderLivraison()">💾 Sauvegarder</button>
+      <button class="btn-secondary" onclick="fermerFormLivraison()">Annuler</button>
     </div>
   </div>
 
