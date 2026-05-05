@@ -1077,22 +1077,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSelectionBar();
   });
   // Annuler sélection
-  // Livraisons
-  document.getElementById('btnAddLivraison').addEventListener('click', () => {
-    _editingLivraisonId = null;
-    document.getElementById('livDate').value = '';
-    document.getElementById('livFournisseur').value = '';
-    document.getElementById('livAffaire').value = '';
-    document.getElementById('livStatut').value = 'En attente';
-    document.getElementById('livNotes').value = '';
-    document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
-    document.getElementById('livraisonForm').classList.remove('hidden');
+  // Livraisons - délégation d'événements (fonctionne même si l'onglet n'est pas visible)
+  document.addEventListener('click', e => {
+    if (e.target && e.target.id === 'btnAddLivraison') {
+      _editingLivraisonId = null;
+      document.getElementById('livDate').value = '';
+      document.getElementById('livFournisseur').value = '';
+      document.getElementById('livAffaire').value = '';
+      document.getElementById('livStatut').value = 'En attente';
+      document.getElementById('livNotes').value = '';
+      document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
+      document.getElementById('livraisonForm').classList.remove('hidden');
+    }
+    if (e.target && e.target.id === 'btnCancelLivraison') {
+      document.getElementById('livraisonForm').classList.add('hidden');
+      _editingLivraisonId = null;
+    }
   });
-  document.getElementById('btnCancelLivraison').addEventListener('click', () => {
-    document.getElementById('livraisonForm').classList.add('hidden');
-    _editingLivraisonId = null;
-  });
-  document.getElementById('btnSaveLivraison').addEventListener('click', async () => {
+  document.addEventListener('click', async e => {
+    if (!e.target || e.target.id !== 'btnSaveLivraison') return;
+    {
     const date        = document.getElementById('livDate').value;
     const fournisseur = document.getElementById('livFournisseur').value.trim();
     const affaire     = document.getElementById('livAffaire').value.trim();
@@ -1117,8 +1121,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sync avec Google Sheets
     const liv = livraisons.find(x => savedId ? String(x.id)===String(savedId) : x.id === livraisons[livraisons.length-1].id);
     if (liv) await pushLivraison(liv);
+    }
   });
-  document.getElementById('livraisonSearch')?.addEventListener('input', e => renderLivraisons(e.target.value));
+  document.addEventListener('input', e => {
+    if (e.target && e.target.id === 'livraisonSearch') renderLivraisons(e.target.value);
+  });
 
   document.getElementById('btnClearSelection').addEventListener('click', () => {
     state.selectedIds = [];
