@@ -1078,11 +1078,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   // Annuler sélection
   // save livraison via onclick HTML
-    const date        = document.getElementById('livDate').value;
-    const fournisseur = document.getElementById('livFournisseur').value.trim();
-    const affaire     = document.getElementById('livAffaire').value.trim();
-    const statut      = document.getElementById('livStatut').value;
-    const notes       = document.getElementById('livNotes').value.trim();
+    const date        = document.getElementById('liv-date').value;
+    const fournisseur = document.getElementById('liv-fournisseur').value.trim();
+    const affaire     = document.getElementById('liv-affaire').value.trim();
+    const statut      = document.getElementById('liv-statut').value;
+    const notes       = document.getElementById('liv-note').value.trim();
     if (!date || !fournisseur || !affaire) {
       showToast('⚠️ Date, fournisseur et affaire sont obligatoires'); return;
     }
@@ -2198,14 +2198,15 @@ function deleteLivraison(id) {
   showToast('🗑 Livraison supprimée');
 }
 
+
 // Fonctions globales appelées via onclick HTML
 window.ouvrirFormLivraison = function() {
   _editingLivraisonId = null;
-  document.getElementById('livDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('livFournisseur').value = '';
-  document.getElementById('livAffaire').value = '';
-  document.getElementById('livStatut').value = 'En attente';
-  document.getElementById('livNotes').value = '';
+  document.getElementById('liv-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('liv-fournisseur').value = '';
+  document.getElementById('liv-affaire').value = '';
+  document.getElementById('liv-statut').value = 'En attente';
+  document.getElementById('liv-note').value = '';
   document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
   document.getElementById('livraisonForm').classList.remove('hidden');
 };
@@ -2216,166 +2217,11 @@ window.fermerFormLivraison = function() {
 };
 
 window.sauvegarderLivraison = async function() {
-  const date        = document.getElementById('livDate').value;
-  const fournisseur = document.getElementById('livFournisseur').value.trim();
-  const affaire     = document.getElementById('livAffaire').value.trim();
-  const statut      = document.getElementById('livStatut').value;
-  const notes       = document.getElementById('livNotes').value.trim();
-
-  if (!date || !fournisseur || !affaire) {
-    alert('Date, fournisseur et affaire sont obligatoires');
-    return;
-  }
-
-  const livraisons = loadLivraisons();
-  let savedLiv;
-
-  if (_editingLivraisonId) {
-    const idx = livraisons.findIndex(x => x.id === _editingLivraisonId);
-    if (idx >= 0) {
-      livraisons[idx] = { ...livraisons[idx], date, fournisseur, affaire, statut, notes };
-      savedLiv = livraisons[idx];
-    }
-  } else {
-    savedLiv = { id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() };
-    livraisons.push(savedLiv);
-  }
-
-  saveLivraisons(livraisons);
-  document.getElementById('livraisonForm').classList.add('hidden');
-  _editingLivraisonId = null;
-  renderLivraisons();
-  showToast('✅ Livraison sauvegardée');
-  if (savedLiv) pushLivraison(savedLiv);
-};
-
-function editLivraison(id) { openLivraisonForm(id); }
-window.editLivraison   = editLivraison;
-window.deleteLivraison = deleteLivraison;
-
-
-// ============================================================
-//  LIVRAISONS
-// ============================================================
-function loadLivraisons() {
-  const raw = localStorage.getItem('steelstock_livraisons');
-  return raw ? JSON.parse(raw) : [];
-}
-function saveLivraisons(livraisons) {
-  localStorage.setItem('steelstock_livraisons', JSON.stringify(livraisons));
-}
-async function pushLivraison(livraison) {
-  try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'saveLivraison', livraison })
-    });
-  } catch(e) { console.warn('pushLivraison error:', e); }
-}
-async function pushDeleteLivraison(id) {
-  try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'deleteLivraison', id })
-    });
-  } catch(e) { console.warn('pushDeleteLivraison error:', e); }
-}
-
-async function pushLivraison(livraison) {
-  if (!state.scriptUrl) return;
-  await sheetRequest('saveLivraison', { livraison });
-}
-
-async function deleteLivraisonFromSheets(id) {
-  if (!state.scriptUrl) return;
-  await sheetRequest('deleteLivraison', { id });
-}
-
-async function syncLivraisons() {
-  if (!state.scriptUrl) return;
-  try {
-    const res = await sheetRequest('getLivraisons', {});
-    if (res && res.livraisons) {
-      saveLivraisons(res.livraisons);
-      renderLivraisons();
-    }
-  } catch(e) {}
-}
-
-let _editingLivraisonId = null;
-
-function renderLivraisons(searchOverride) {
-  const livraisons = loadLivraisons();
-  const search = (searchOverride !== undefined ? searchOverride : (document.getElementById('livraisonSearch')?.value || '')).toLowerCase();
-  const tbody = document.getElementById('livraisonTableBody');
-  if (!tbody) return;
-
-  const filtered = livraisons.filter(l =>
-    !search || [l.fournisseur, l.affaire, l.notes, l.statut].join(' ').toLowerCase().includes(search)
-  ).sort((a,b) => new Date(a.date) - new Date(b.date));
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">Aucune livraison trouvée</td></tr>';
-    return;
-  }
-
-  const statutColors = {
-    'En attente': '#fbbf24',
-    'Confirmée':  '#34d399',
-    'Livrée':     '#60a5fa',
-    'Annulée':    '#f87171',
-  };
-
-  // Trier : futures en premier, passées en gris
-  const today = new Date(); today.setHours(0,0,0,0);
-
-  tbody.innerHTML = filtered.map(l => {
-    const d = new Date(l.date);
-    const isPast = d < today;
-    const isToday = d.getTime() === today.getTime();
-    const isSoon = !isPast && (d - today) / 86400000 <= 7;
-    const rowStyle = isPast ? 'opacity:0.5' : isToday ? 'background:rgba(249,115,22,0.1)' : isSoon ? 'background:rgba(251,191,36,0.07)' : '';
-    const color = statutColors[l.statut] || '#94a3b8';
-    const dateStr = new Date(l.date + 'T12:00:00').toLocaleDateString('fr-FR', {weekday:'short',day:'2-digit',month:'short',year:'numeric'});
-    return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;${rowStyle}">
-      <td style="padding:10px 12px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--orange)':isPast?'var(--text-muted)':'var(--text)'}">${dateStr}${isToday?' 📅':isSoon?' ⚠️':''}</td>
-      <td style="padding:10px 12px;color:var(--text)">${l.fournisseur}</td>
-      <td style="padding:10px 12px;color:var(--orange);font-weight:600">${l.affaire}</td>
-      <td style="padding:10px 12px"><span style="background:${color}22;color:${color};border:1px solid ${color};padding:2px 8px;border-radius:20px;font-size:11px">${l.statut}</span></td>
-      <td style="padding:10px 12px;color:var(--text-muted);font-size:12px">${l.notes||'—'}</td>
-      <td style="padding:10px 12px;text-align:center;display:flex;gap:6px;justify-content:center">
-        <button onclick="editLivraison('${l.id}')" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px">✎</button>
-        <button onclick="deleteLivraison('${l.id}')" style="background:none;border:1px solid #f87171;color:#f87171;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px">✕</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-// Fonctions globales appelées via onclick HTML
-window.ouvrirFormLivraison = function() {
-  _editingLivraisonId = null;
-  document.getElementById('livDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('livFournisseur').value = '';
-  document.getElementById('livAffaire').value = '';
-  document.getElementById('livStatut').value = 'En attente';
-  document.getElementById('livNotes').value = '';
-  document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
-  document.getElementById('livraisonForm').classList.remove('hidden');
-};
-
-window.fermerFormLivraison = function() {
-  document.getElementById('livraisonForm').classList.add('hidden');
-  _editingLivraisonId = null;
-};
-
-window.sauvegarderLivraison = async function() {
-  const date        = document.getElementById('livDate').value;
-  const fournisseur = document.getElementById('livFournisseur').value.trim();
-  const affaire     = document.getElementById('livAffaire').value.trim();
-  const statut      = document.getElementById('livStatut').value;
-  const notes       = document.getElementById('livNotes').value.trim();
+  const date        = document.getElementById('liv-date').value;
+  const fournisseur = document.getElementById('liv-fournisseur').value.trim();
+  const affaire     = document.getElementById('liv-affaire').value.trim();
+  const statut      = document.getElementById('liv-statut').value;
+  const notes       = document.getElementById('liv-note').value.trim();
 
   if (!date || !fournisseur || !affaire) {
     alert('Date, fournisseur et affaire sont obligatoires');
@@ -2409,11 +2255,11 @@ function editLivraison(id) {
   const l = livraisons.find(x => String(x.id) === String(id));
   if (!l) { showToast('Livraison introuvable'); return; }
   _editingLivraisonId = String(id);
-  document.getElementById('livDate').value = l.date || '';
-  document.getElementById('livFournisseur').value = l.fournisseur || '';
-  document.getElementById('livAffaire').value = l.affaire || '';
-  document.getElementById('livStatut').value = l.statut || 'En attente';
-  document.getElementById('livNotes').value = l.notes || '';
+  document.getElementById('liv-date').value = l.date || '';
+  document.getElementById('liv-fournisseur').value = l.fournisseur || '';
+  document.getElementById('liv-affaire').value = l.affaire || '';
+  document.getElementById('liv-statut').value = l.statut || 'En attente';
+  document.getElementById('liv-note').value = l.notes || '';
   document.getElementById('livraisonFormTitle').textContent = 'MODIFIER LA LIVRAISON';
   document.getElementById('livraisonForm').classList.remove('hidden');
   document.getElementById('livraisonForm').scrollIntoView({behavior:'smooth'});
