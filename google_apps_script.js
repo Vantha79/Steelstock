@@ -7,11 +7,68 @@
 
 var SHEET_ARTICLES   = 'Articles';
 var SHEET_MOUVEMENTS = 'Mouvements';
+var SHEET_LIVRAISONS = 'Livraisons';
+var COLS_LIVRAISONS  = ['id','date','fournisseur','affaire','statut','notes','createdAt'];
 
 var COLS_ARTICLES = ['id','reference','designation','forme','dimensions','quantite','unite','prix','fournisseur','localisation','statut','dateEntree','creePar','modifiePar','dateModif','lastNote'];
 var COLS_MVT      = ['id','date','type','reference','designation','quantite','note','par'];
 
 function doGet(e) { return handleRequest(e); }
+// ─── LIVRAISONS ───────────────────────────────────────────────
+
+
+function getLivraisons() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('Livraisons');
+  if (!sh) return { livraisons: [] };
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { livraisons: [] };
+  const headers = data[0];
+  const livraisons = data.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i] !== undefined ? String(row[i]) : ''; });
+    return obj;
+  });
+  return { livraisons };
+}
+
+function saveLivraison(params) {
+  const liv = params.livraison;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('Livraisons');
+  if (!sh) {
+    sh = ss.insertSheet('Livraisons');
+    sh.appendRow(COLS_LIVRAISONS);
+  }
+  const data = sh.getDataRange().getValues();
+  const headers = data[0];
+  // Chercher ligne existante
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(liv.id)) {
+      const row = COLS_LIVRAISONS.map(c => liv[c] || '');
+      sh.getRange(i+1, 1, 1, row.length).setValues([row]);
+      return { ok: true };
+    }
+  }
+  // Nouvelle ligne
+  sh.appendRow(COLS_LIVRAISONS.map(c => liv[c] || ''));
+  return { ok: true };
+}
+
+function deleteLivraison(params) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('Livraisons');
+  if (!sh) return { ok: true };
+  const data = sh.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(params.id)) {
+      sh.deleteRow(i+1);
+      return { ok: true };
+    }
+  }
+  return { ok: true };
+}
+
 function doPost(e) { return handleRequest(e); }
 
 function handleRequest(e) {
