@@ -904,9 +904,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Boutons
   document.getElementById('btnAdd').addEventListener('click', openAdd);
+
+  // ── Livraisons (listeners simples) ──
+  const btnNLiv = document.getElementById('btnNouveauLiv');
+  if (btnNLiv) btnNLiv.addEventListener('click', () => ouvrirFormLiv(true));
+  const btnOKLiv = document.getElementById('btnOKLiv');
+  if (btnOKLiv) btnOKLiv.addEventListener('click', sauvegarderLiv);
+  const btnXLiv = document.getElementById('btnXLiv');
+  if (btnXLiv) btnXLiv.addEventListener('click', fermerFormLiv);
   document.getElementById('btnCancel').addEventListener('click', closeModal);
 
-  // Livraisons wired below
+
   // Bouton prix marché dans le formulaire
   // _prixMarcheBase est déclaré globalement plus bas
 
@@ -1077,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSelectionBar();
   });
   // Annuler sélection
-  // save livraison via onclick HTML
+
     const date        = document.getElementById('liv-date').value;
     const fournisseur = document.getElementById('liv-fournisseur').value.trim();
     const affaire     = document.getElementById('liv-affaire').value.trim();
@@ -2065,8 +2073,7 @@ function planZoneClick(zone) {
 window.planZoneClick = planZoneClick;
 
 
-// ============================================================
-//  LIVRAISONS
+
 // ============================================================
 const LIVRAISON_KEY = 'steelstock_livraisons';
 
@@ -2199,81 +2206,149 @@ function deleteLivraison(id) {
 }
 
 
-// Fonctions globales appelées via onclick HTML
-window.ouvrirFormLivraison = function() {
-  _editingLivraisonId = null;
-  document.getElementById('liv-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('liv-fournisseur').value = '';
-  document.getElementById('liv-affaire').value = '';
-  document.getElementById('liv-statut').value = 'En attente';
-  document.getElementById('liv-note').value = '';
-  document.getElementById('livraisonFormTitle').textContent = 'NOUVELLE LIVRAISON';
-  document.getElementById('livraisonForm').classList.remove('hidden');
-};
 
-window.fermerFormLivraison = function() {
-  document.getElementById('livraisonForm').classList.add('hidden');
-  _editingLivraisonId = null;
-};
 
-window.sauvegarderLivraison = async function() {
-  const date        = document.getElementById('liv-date').value;
-  const fournisseur = document.getElementById('liv-fournisseur').value.trim();
-  const affaire     = document.getElementById('liv-affaire').value.trim();
-  const statut      = document.getElementById('liv-statut').value;
-  const notes       = document.getElementById('liv-note').value.trim();
+// ============================================================
+//  LIVRAISONS - Code simple et fiable
+// ============================================================
+let _livEditId = null;
+let _livraisons = JSON.parse(localStorage.getItem('steelstock_livraisons') || '[]');
 
-  if (!date || !fournisseur || !affaire) {
-    alert('Date, fournisseur et affaire sont obligatoires');
+function sauvegarderLivLocal() {
+  localStorage.setItem('steelstock_livraisons', JSON.stringify(_livraisons));
+}
+
+function afficherLivraisons(filtre) {
+  const liste = document.getElementById('listeLiv');
+  if (!liste) return;
+  const q = (filtre || '').toLowerCase();
+  const data = q ? _livraisons.filter(l =>
+    [l.date,l.fournisseur,l.affaire,l.statut,l.notes].join(' ').toLowerCase().includes(q)
+  ) : _livraisons;
+
+  if (data.length === 0) {
+    liste.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">Aucune livraison — cliquez sur + Nouvelle livraison</div>';
     return;
   }
 
-  const livraisons = loadLivraisons();
-  let savedLiv;
+  const couleurs = {'En attente':'#fbbf24','Confirmée':'#34d399','Livrée':'#60a5fa','Annulée':'#f87171'};
+  const sorted = [...data].sort((a,b) => a.date.localeCompare(b.date));
+  const today = new Date().toISOString().split('T')[0];
 
-  if (_editingLivraisonId) {
-    const idx = livraisons.findIndex(x => x.id === _editingLivraisonId);
+  liste.innerHTML = sorted.map(l => {
+    const c = couleurs[l.statut] || '#94a3b8';
+    const isPast = l.date < today;
+    const isToday = l.date === today;
+    const bg = isToday ? 'rgba(249,115,22,0.1)' : isPast ? 'rgba(255,255,255,0.02)' : '';
+    const dateF = new Date(l.date + 'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;${bg?'border-left:3px solid #f97316;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:${isToday?'#f97316':'var(--text)'}">${dateF}${isToday?' 📅':''}</div>
+          <div style="font-size:14px;color:var(--orange);font-weight:600;margin-top:2px">${l.fournisseur}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Affaire : <b style="color:var(--text)">${l.affaire}</b></div>
+          ${l.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">${l.notes}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <span style="background:${c}22;color:${c};border:1px solid ${c};padding:3px 10px;border-radius:20px;font-size:11px">${l.statut}</span>
+          <div style="display:flex;gap:6px">
+            <button onclick="modifLiv('${l.id}')" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">✎ Modifier</button>
+            <button onclick="suppLiv('${l.id}')" style="background:none;border:1px solid #f87171;color:#f87171;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.afficherLivraisons = afficherLivraisons;
+
+function filtrerLiv(q) { afficherLivraisons(q); }
+window.filtrerLiv = filtrerLiv;
+
+function ouvrirFormLiv(clear) {
+  const f = document.getElementById('formLiv');
+  if (!f) return;
+  if (clear) {
+    _livEditId = null;
+    document.getElementById('livD').value = new Date().toISOString().split('T')[0];
+    document.getElementById('livF').value = '';
+    document.getElementById('livA').value = '';
+    document.getElementById('livS').value = 'En attente';
+    document.getElementById('livN').value = '';
+    document.getElementById('titreLiv').textContent = 'NOUVELLE LIVRAISON';
+  }
+  f.style.display = 'block';
+  f.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.ouvrirFormLiv = ouvrirFormLiv;
+
+function fermerFormLiv() {
+  const f = document.getElementById('formLiv');
+  if (f) f.style.display = 'none';
+  _livEditId = null;
+}
+window.fermerFormLiv = fermerFormLiv;
+
+function sauvegarderLiv() {
+  const date        = document.getElementById('livD').value;
+  const fournisseur = document.getElementById('livF').value.trim();
+  const affaire     = document.getElementById('livA').value.trim();
+  const statut      = document.getElementById('livS').value;
+  const notes       = document.getElementById('livN').value.trim();
+
+  if (!date)        { alert('Veuillez saisir une date'); return; }
+  if (!fournisseur) { alert('Veuillez saisir un fournisseur'); return; }
+  if (!affaire)     { alert('Veuillez saisir une affaire'); return; }
+
+  let savedLiv;
+  if (_livEditId) {
+    const idx = _livraisons.findIndex(x => x.id === _livEditId);
     if (idx >= 0) {
-      livraisons[idx] = { ...livraisons[idx], date, fournisseur, affaire, statut, notes };
-      savedLiv = livraisons[idx];
+      _livraisons[idx] = { ..._livraisons[idx], date, fournisseur, affaire, statut, notes };
+      savedLiv = _livraisons[idx];
     }
   } else {
     savedLiv = { id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() };
-    livraisons.push(savedLiv);
+    _livraisons.push(savedLiv);
   }
 
-  saveLivraisons(livraisons);
-  document.getElementById('livraisonForm').classList.add('hidden');
-  _editingLivraisonId = null;
-  renderLivraisons();
+  sauvegarderLivLocal();
+  fermerFormLiv();
+  afficherLivraisons();
   showToast('✅ Livraison sauvegardée');
-  if (savedLiv) pushLivraison(savedLiv);
-};
-
-function editLivraison(id) {
-  const livraisons = loadLivraisons();
-  const l = livraisons.find(x => String(x.id) === String(id));
-  if (!l) { showToast('Livraison introuvable'); return; }
-  _editingLivraisonId = String(id);
-  document.getElementById('liv-date').value = l.date || '';
-  document.getElementById('liv-fournisseur').value = l.fournisseur || '';
-  document.getElementById('liv-affaire').value = l.affaire || '';
-  document.getElementById('liv-statut').value = l.statut || 'En attente';
-  document.getElementById('liv-note').value = l.notes || '';
-  document.getElementById('livraisonFormTitle').textContent = 'MODIFIER LA LIVRAISON';
-  document.getElementById('livraisonForm').classList.remove('hidden');
-  document.getElementById('livraisonForm').scrollIntoView({behavior:'smooth'});
+  // Sync Sheets en arrière-plan
+  if (savedLiv) {
+    fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'saveLivraison', livraison: savedLiv})
+    }).catch(()=>{});
+  }
 }
-window.editLivraison = editLivraison;
+window.sauvegarderLiv = sauvegarderLiv;
 
-async function deleteLivraison(id) {
+function modifLiv(id) {
+  const l = _livraisons.find(x => x.id === id);
+  if (!l) return;
+  _livEditId = id;
+  document.getElementById('livD').value = l.date;
+  document.getElementById('livF').value = l.fournisseur;
+  document.getElementById('livA').value = l.affaire;
+  document.getElementById('livS').value = l.statut;
+  document.getElementById('livN').value = l.notes || '';
+  document.getElementById('titreLiv').textContent = 'MODIFIER LA LIVRAISON';
+  ouvrirFormLiv(false);
+}
+window.modifLiv = modifLiv;
+
+function suppLiv(id) {
   if (!confirm('Supprimer cette livraison ?')) return;
-  const livraisons = loadLivraisons().filter(x => String(x.id) !== String(id));
-  saveLivraisons(livraisons);
-  renderLivraisons();
-  await deleteLivraisonFromSheets(id);
+  _livraisons = _livraisons.filter(x => x.id !== id);
+  sauvegarderLivLocal();
+  afficherLivraisons();
+  fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'deleteLivraison', id})
+  }).catch(()=>{});
 }
-window.deleteLivraison = deleteLivraison;
+window.suppLiv = suppLiv;
 
 let _prixMarcheBase = null; // prix brut marché sans marge (global)
 
@@ -2863,3 +2938,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ============================================================
+//  LIVRAISONS — code complet
+// ============================================================
+
+let _livId = null; // id en cours d'édition
+
+function getLivs() {
+  try { return JSON.parse(localStorage.getItem('ss_livraisons') || '[]'); }
+  catch(e) { return []; }
+}
+function setLivs(arr) {
+  localStorage.setItem('ss_livraisons', JSON.stringify(arr));
+}
+
+// Afficher la liste
+function afficherLivs(q) {
+  const el = document.getElementById('listeLiv');
+  if (!el) return;
+  let arr = getLivs();
+  if (q) {
+    const s = q.toLowerCase();
+    arr = arr.filter(l => [l.f,l.a,l.n,l.s].join(' ').toLowerCase().includes(s));
+  }
+  arr.sort((a,b) => (a.d||'').localeCompare(b.d||''));
+  if (!arr.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">Aucune livraison</div>';
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const colors = {'En attente':'#fbbf24','Confirmée':'#34d399','Livrée':'#60a5fa','Annulée':'#f87171'};
+  el.innerHTML = arr.map(l => {
+    const isPast = l.d < today;
+    const isToday = l.d === today;
+    const c = colors[l.s] || '#94a3b8';
+    const dateAff = l.d ? new Date(l.d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;${isToday?'border-color:var(--orange)':isPast?'opacity:0.6':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:700;color:${isToday?'var(--orange)':'var(--text)'};font-size:15px">${dateAff}${isToday?' 📅':''}</div>
+          <div style="color:var(--orange);font-weight:600;margin-top:2px">${l.a||'—'}</div>
+          <div style="color:var(--text-muted);font-size:13px">${l.f||'—'}</div>
+          ${l.n?`<div style="color:var(--text-muted);font-size:12px;margin-top:4px">${l.n}</div>`:''}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="background:${c}22;color:${c};border:1px solid ${c};padding:3px 10px;border-radius:20px;font-size:11px">${l.s||'—'}</span>
+          <button onclick="modifLiv('${l.id}')" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">✎</button>
+          <button onclick="suppLiv('${l.id}')" style="background:none;border:1px solid #f87171;color:#f87171;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
