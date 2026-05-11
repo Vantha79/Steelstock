@@ -2219,6 +2219,8 @@ function sauvegarderLivLocal() {
 }
 
 function afficherLivraisons(filtre) {
+  // Toujours recharger depuis localStorage pour avoir les données fraîches
+  _livraisons = JSON.parse(localStorage.getItem('steelstock_livraisons') || '[]');
   const liste = document.getElementById('listeLiv');
   if (!liste) return;
   const q = (filtre || '').toLowerCase();
@@ -2356,6 +2358,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tab === 'marche') initMarcheTab();
+      if (btn.dataset.tab === 'livraison') setTimeout(afficherLivraisons, 50);
     });
   });
   const btnRefresh = document.getElementById('btnRefreshMarche');
