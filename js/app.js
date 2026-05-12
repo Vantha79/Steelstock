@@ -2320,9 +2320,11 @@ function sauvegarderLiv() {
   showToast('✅ Livraison sauvegardée');
   // Sync Sheets en arrière-plan
   if (savedLiv) {
-    fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'saveLivraison', livraison: savedLiv})
-    }).catch(()=>{});
+    if (state.scriptUrl) {
+      fetch(state.scriptUrl, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'saveLivraison', livraison: savedLiv})
+      }).catch(()=>{});
+    }
   }
 }
 window.sauvegarderLiv = sauvegarderLiv;
@@ -2346,9 +2348,11 @@ function suppLiv(id) {
   _livraisons = _livraisons.filter(x => x.id !== id);
   sauvegarderLivLocal();
   afficherLivraisons();
-  fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'deleteLivraison', id})
-  }).catch(()=>{});
+  if (state.scriptUrl) {
+    fetch(state.scriptUrl, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'deleteLivraison', id})
+    }).catch(()=>{});
+  }
 }
 window.suppLiv = suppLiv;
 
