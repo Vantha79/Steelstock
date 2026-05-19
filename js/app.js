@@ -1123,8 +1123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tab === 'qr') setTimeout(renderQRTab, 50);
       if (btn.dataset.tab === 'plan') setTimeout(renderPlan, 50);
-      if (btn.dataset.tab === 'livraison') { setTimeout(renderLivraisons, 50); setTimeout(syncLivraisons, 200); }
-      if (btn.dataset.tab === 'livraison') { setTimeout(renderLivraisons, 50); setTimeout(syncLivraisons, 200); }
+      if (btn.dataset.tab === 'livraison') { setTimeout(syncEtAfficherLivraisons, 100); }
     });
   });
 
@@ -2322,13 +2321,28 @@ function suppLiv(id) {
 }
 window.suppLiv = suppLiv;
 
+// Sync livraisons depuis Sheets puis afficher
+async function syncEtAfficherLivraisons() {
+  afficherLivraisons();
+  const data = await sheetRequest('getAll', {});
+  if (data && data.livraisons && Array.isArray(data.livraisons)) {
+    const livs = data.livraisons.filter(l => l.id);
+    if (livs.length >= 0) {
+      localStorage.setItem('steelstock_livraisons', JSON.stringify(livs));
+      _livraisons = livs;
+      afficherLivraisons();
+    }
+  }
+}
+window.syncEtAfficherLivraisons = syncEtAfficherLivraisons;
+
 let _prixMarcheBase = null; // prix brut marché sans marge (global)
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.tab === 'marche') initMarcheTab();
-      if (btn.dataset.tab === 'livraison') setTimeout(afficherLivraisons, 50);
+      
     });
   });
   const btnRefresh = document.getElementById('btnRefreshMarche');
