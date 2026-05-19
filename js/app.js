@@ -1085,32 +1085,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSelectionBar();
   });
   // Annuler sélection
-
-    const date        = document.getElementById('liv-date').value;
-    const fournisseur = document.getElementById('liv-fournisseur').value.trim();
-    const affaire     = document.getElementById('liv-affaire').value.trim();
-    const statut      = document.getElementById('liv-statut').value;
-    const notes       = document.getElementById('liv-note').value.trim();
-    if (!date || !fournisseur || !affaire) {
-      showToast('⚠️ Date, fournisseur et affaire sont obligatoires'); return;
-    }
-    const livraisons = loadLivraisons();
-    if (_editingLivraisonId) {
-      const idx = livraisons.findIndex(x => x.id === _editingLivraisonId);
-      if (idx >= 0) livraisons[idx] = { ...livraisons[idx], date, fournisseur, affaire, statut, notes };
-    } else {
-      livraisons.push({ id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() });
-    }
-    saveLivraisons(livraisons);
-    document.getElementById('livraisonForm').classList.add('hidden');
-    const savedId = _editingLivraisonId;
-    _editingLivraisonId = null;
-    renderLivraisons();
-    showToast('✅ Livraison sauvegardée');
-    // Sync avec Google Sheets
-    const liv = livraisons.find(x => savedId ? String(x.id)===String(savedId) : x.id === livraisons[livraisons.length-1].id);
-    if (liv) await pushLivraison(liv);
-
   document.getElementById('btnClearSelection').addEventListener('click', () => {
     state.selectedIds = [];
     renderTable();
@@ -2320,11 +2294,7 @@ function sauvegarderLiv() {
   showToast('✅ Livraison sauvegardée');
   // Sync Sheets en arrière-plan
   if (savedLiv) {
-    if (state.scriptUrl) {
-      fetch(state.scriptUrl, {method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({action:'saveLivraison', livraison: savedLiv})
-      }).catch(()=>{});
-    }
+    sheetRequest('saveLivraison', { livraison: savedLiv });
   }
 }
 window.sauvegarderLiv = sauvegarderLiv;
@@ -2348,11 +2318,7 @@ function suppLiv(id) {
   _livraisons = _livraisons.filter(x => x.id !== id);
   sauvegarderLivLocal();
   afficherLivraisons();
-  if (state.scriptUrl) {
-    fetch(state.scriptUrl, {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'deleteLivraison', id})
-    }).catch(()=>{});
-  }
+  sheetRequest('deleteLivraison', { id });
 }
 window.suppLiv = suppLiv;
 
