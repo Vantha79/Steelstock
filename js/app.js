@@ -262,6 +262,43 @@ function getLastNote(articleId) {
 }
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'; }
+
+// Normalise n'importe quel format de date → YYYY-MM-DD
+function normalizeDate(d) {
+  if (!d) return '';
+  const s = String(d).trim();
+  // Déjà au bon format YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+  // Format DD/MM/YYYY (depuis Sheets)
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
+    const [day, month, year] = s.split('/');
+    return year + '-' + month + '-' + day;
+  }
+  // Format DD-MM-YYYY
+  if (/^\d{2}-\d{2}-\d{4}/.test(s)) {
+    const [day, month, year] = s.split('-');
+    return year + '-' + month + '-' + day;
+  }
+  // Essayer de parser autrement
+  const dt = new Date(s);
+  if (!isNaN(dt)) return dt.toISOString().substring(0, 10);
+  return '';
+}
+
+// Normalise une date vers YYYY-MM-DD (accepte DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD)
+function normaliserDate(raw) {
+  if (!raw) return '';
+  const s = String(raw).trim();
+  // Déjà au bon format YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  // Format DD/MM/YYYY ou DD-MM-YYYY
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  // Format DD/MM/YY
+  const m2 = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/);
+  if (m2) return `20${m2[3]}-${m2[2].padStart(2,'0')}-${m2[1].padStart(2,'0')}`;
+  return s.slice(0, 10);
+}
 function today() { return new Date().toISOString().split('T')[0]; }
 function uid() { return state.nextId++; }
 
@@ -2212,10 +2249,12 @@ function afficherLivraisons(filtre) {
 
   liste.innerHTML = sorted.map(l => {
     const c = couleurs[l.statut] || '#94a3b8';
-    const isPast = l.date < today;
-    const isToday = l.date === today;
+    const dateNorm2 = normalizeDate(l.date);
+    const isPast = dateNorm2 < today;
+    const isToday = dateNorm2 === today;
     const bg = isToday ? 'rgba(249,115,22,0.1)' : isPast ? 'rgba(255,255,255,0.02)' : '';
-    const dateF = new Date(l.date + 'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    const dateNorm = normalizeDate(l.date);
+    const dateF = dateNorm ? new Date(dateNorm + 'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
     return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;${bg?'border-left:3px solid #f97316;':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
@@ -2279,11 +2318,16 @@ function sauvegarderLiv() {
   if (_livEditId) {
     const idx = _livraisons.findIndex(x => x.id === _livEditId);
     if (idx >= 0) {
-      _livraisons[idx] = { ..._livraisons[idx], date, fournisseur, affaire, statut, notes };
+      // Conserver l'id et createdAt, mettre à jour les autres champs
+      _livraisons[idx] = { ..._livraisons[idx], date, fournisseur, affaire, statut, notes,
+        // Aussi mettre à jour les champs courts pour compatibilité
+        d: date, f: fournisseur, a: affaire, s: statut, n: notes };
       savedLiv = _livraisons[idx];
     }
   } else {
-    savedLiv = { id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes, createdAt: new Date().toISOString() };
+    savedLiv = { id: 'liv_' + Date.now(), date, fournisseur, affaire, statut, notes,
+      d: date, f: fournisseur, a: affaire, s: statut, n: notes,
+      createdAt: new Date().toISOString() };
     _livraisons.push(savedLiv);
   }
 
@@ -2302,11 +2346,13 @@ function modifLiv(id) {
   const l = _livraisons.find(x => x.id === id);
   if (!l) return;
   _livEditId = id;
-  document.getElementById('livD').value = l.date;
-  document.getElementById('livF').value = l.fournisseur;
-  document.getElementById('livA').value = l.affaire;
-  document.getElementById('livS').value = l.statut;
-  document.getElementById('livN').value = l.notes || '';
+  // Normaliser la date au format YYYY-MM-DD pour l'input type="date"
+  const dateNorm = normaliserDate(l.date || l.d || '');
+  document.getElementById('livD').value = dateNorm;
+  document.getElementById('livF').value = l.fournisseur || l.f || '';
+  document.getElementById('livA').value = l.affaire || l.a || '';
+  document.getElementById('livS').value = l.statut || l.s || 'En attente';
+  document.getElementById('livN').value = l.notes || l.n || '';
   document.getElementById('titreLiv').textContent = 'MODIFIER LA LIVRAISON';
   ouvrirFormLiv(false);
 }
@@ -2326,7 +2372,10 @@ async function syncEtAfficherLivraisons() {
   afficherLivraisons();
   const data = await sheetRequest('getAll', {});
   if (data && data.livraisons && Array.isArray(data.livraisons)) {
-    const livs = data.livraisons.filter(l => l.id);
+    const livs = data.livraisons.filter(l => l.id).map(l => ({
+      ...l,
+      date: normaliserDate(l.date || ''),
+    }));
     if (livs.length >= 0) {
       localStorage.setItem('steelstock_livraisons', JSON.stringify(livs));
       _livraisons = livs;
@@ -2957,20 +3006,23 @@ function afficherLivs(q) {
   const today = new Date().toISOString().split('T')[0];
   const colors = {'En attente':'#fbbf24','Confirmée':'#34d399','Livrée':'#60a5fa','Annulée':'#f87171'};
   el.innerHTML = arr.map(l => {
-    const isPast = l.d < today;
-    const isToday = l.d === today;
-    const c = colors[l.s] || '#94a3b8';
-    const dateAff = l.d ? new Date(l.d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const rawD = normaliserDate(l.date || l.d || '');
+    const isPast = rawD < today;
+    const isToday = rawD === today;
+    const c = colors[l.statut||l.s] || '#94a3b8';
+    // Support des deux formats : l.date (Sheets) et l.d (local ancien)
+    const rawDate = normaliserDate(l.date || l.d || '');
+    const dateAff = rawDate ? new Date(rawDate + 'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
     return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;${isToday?'border-color:var(--orange)':isPast?'opacity:0.6':''}">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div>
           <div style="font-weight:700;color:${isToday?'var(--orange)':'var(--text)'};font-size:15px">${dateAff}${isToday?' 📅':''}</div>
-          <div style="color:var(--orange);font-weight:600;margin-top:2px">${l.a||'—'}</div>
-          <div style="color:var(--text-muted);font-size:13px">${l.f||'—'}</div>
-          ${l.n?`<div style="color:var(--text-muted);font-size:12px;margin-top:4px">${l.n}</div>`:''}
+          <div style="color:var(--orange);font-weight:600;margin-top:2px">${l.affaire||l.a||'—'}</div>
+          <div style="color:var(--text-muted);font-size:13px">${l.fournisseur||l.f||'—'}</div>
+          ${(l.notes||l.n)?`<div style="color:var(--text-muted);font-size:12px;margin-top:4px">${l.notes||l.n}</div>`:''}
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <span style="background:${c}22;color:${c};border:1px solid ${c};padding:3px 10px;border-radius:20px;font-size:11px">${l.s||'—'}</span>
+          <span style="background:${c}22;color:${c};border:1px solid ${c};padding:3px 10px;border-radius:20px;font-size:11px">${l.statut||l.s||'—'}</span>
           <button onclick="modifLiv('${l.id}')" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">✎</button>
           <button onclick="suppLiv('${l.id}')" style="background:none;border:1px solid #f87171;color:#f87171;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">✕</button>
         </div>
