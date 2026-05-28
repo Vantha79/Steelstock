@@ -8,12 +8,19 @@
 var SHEET_ARTICLES   = 'Articles';
 var SHEET_MOUVEMENTS = 'Mouvements';
 var SHEET_LIVRAISONS = 'Livraisons';
+var SHEET_BOULONNERIE = 'Boulonnerie';
 var COLS_LIVRAISONS  = ['id','date','fournisseur','affaire','statut','notes','createdAt'];
+var COLS_BOULONNERIE = ['id','date','affaire','fournisseur','detail','statut','createdAt'];
 
 var COLS_ARTICLES = ['id','reference','designation','forme','dimensions','quantite','unite','prix','fournisseur','localisation','statut','dateEntree','creePar','modifiePar','dateModif','lastNote'];
 var COLS_MVT      = ['id','date','type','reference','designation','quantite','note','par'];
 
-function doGet(e) { return handleRequest(e); }
+function doGet(e) {
+  const result = handleRequest(e);
+  return ContentService
+    .createTextOutput(result.getContent())
+    .setMimeType(ContentService.MimeType.JSON);
+}
 // ─── LIVRAISONS ───────────────────────────────────────────────
 
 
@@ -69,7 +76,48 @@ function deleteLivraison(params) {
   return { ok: true };
 }
 
-function doPost(e) { return handleRequest(e); }
+// ─── BOULONNERIE ───────────────────────────────────────────────
+
+function getBoulonnerie() {
+  const sh = getOrCreateSheet(SHEET_BOULONNERIE, COLS_BOULONNERIE);
+  return { ok: true, boulonnerie: sheetToObjects(sh, COLS_BOULONNERIE) };
+}
+
+function saveBoulonnerie(params) {
+  const b = params.boulonnerie;
+  if (!b || !b.id) return { ok: false, error: 'Entrée invalide' };
+  const sh = getOrCreateSheet(SHEET_BOULONNERIE, COLS_BOULONNERIE);
+  const data = sh.getDataRange().getValues();
+  const row = COLS_BOULONNERIE.map(function(c){ return b[c] !== undefined ? b[c] : ''; });
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(b.id)) {
+      sh.getRange(i+1, 1, 1, row.length).setValues([row]);
+      return { ok: true };
+    }
+  }
+  sh.appendRow(row);
+  return { ok: true };
+}
+
+function deleteBoulonnerie(params) {
+  if (!params.id) return { ok: false, error: 'ID manquant' };
+  const sh = getOrCreateSheet(SHEET_BOULONNERIE, COLS_BOULONNERIE);
+  const data = sh.getDataRange().getValues();
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][0]) === String(params.id)) {
+      sh.deleteRow(i+1);
+      return { ok: true };
+    }
+  }
+  return { ok: true };
+}
+
+function doPost(e) {
+  const result = handleRequest(e);
+  return ContentService
+    .createTextOutput(result.getContent())
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
 function handleRequest(e) {
   try {
@@ -87,6 +135,9 @@ function handleRequest(e) {
       case 'replaceAll':       result = replaceAll(payload);                 break;
       case 'saveLivraison':    result = saveLivraison(payload);              break;
       case 'deleteLivraison':  result = deleteLivraison(payload);            break;
+      case 'getBoulonnerie':   result = getBoulonnerie();                    break;
+      case 'saveBoulonnerie':  result = saveBoulonnerie(payload);            break;
+      case 'deleteBoulonnerie':result = deleteBoulonnerie(payload);          break;
       default:                 result = { ok:false, error:'Action inconnue: '+action };
     }
     return jsonResponse(result);
@@ -96,7 +147,9 @@ function handleRequest(e) {
 }
 
 function jsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function getOrCreateSheet(name, headers) {
@@ -114,7 +167,8 @@ function getAll() {
   var sheetA = getOrCreateSheet(SHEET_ARTICLES, COLS_ARTICLES);
   var sheetM = getOrCreateSheet(SHEET_MOUVEMENTS, COLS_MVT);
   var sheetL = getOrCreateSheet(SHEET_LIVRAISONS, COLS_LIVRAISONS);
-  return { ok:true, articles:sheetToObjects(sheetA, COLS_ARTICLES), mouvements:sheetToObjects(sheetM, COLS_MVT), livraisons:sheetToObjects(sheetL, COLS_LIVRAISONS) };
+  var sheetB = getOrCreateSheet(SHEET_BOULONNERIE, COLS_BOULONNERIE);
+  return { ok:true, articles:sheetToObjects(sheetA, COLS_ARTICLES), mouvements:sheetToObjects(sheetM, COLS_MVT), livraisons:sheetToObjects(sheetL, COLS_LIVRAISONS), boulonnerie:sheetToObjects(sheetB, COLS_BOULONNERIE) };
 }
 
 function sheetToObjects(sheet, cols) {
@@ -191,3 +245,4 @@ function replaceAll(payload) {
   }
   return { ok:true };
 }
+
