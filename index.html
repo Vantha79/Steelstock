@@ -36,6 +36,7 @@
     <button class="tab" data-tab="marche">📈 Marché</button>
     <button class="tab" data-tab="plan">🗺 Plan</button>
     <button class="tab" data-tab="livraison">🚚 Livraisons</button>
+    <button class="tab" data-tab="boulonnerie">🔩 Boulonnerie</button>
   </nav>
 </header>
 
@@ -751,5 +752,214 @@
 
   <div id="listeLiv" style="display:flex;flex-direction:column;gap:8px"></div>
 </main>
+
+<!-- ======================== TAB: BOULONNERIE ======================== -->
+<main id="tab-boulonnerie" class="tab-content">
+  <div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:8px 12px">
+    <h2 style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f97316;font-size:20px">🔩 BOULONNERIE</h2>
+    <button class="btn-primary" onclick="ouvrirFormBoul()">+ Nouvelle entrée</button>
+    <input type="search" placeholder="🔍 Rechercher..." oninput="filtrerBoul(this.value)"
+      style="padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;width:200px"/>
+    <button class="btn-secondary" onclick="exportBoulCSV()" title="Exporter CSV">↓ CSV</button>
+  </div>
+
+  <!-- FORMULAIRE BOULONNERIE -->
+  <div id="formBoul" style="display:none;background:var(--bg2);border:1px solid var(--orange);border-radius:8px;padding:16px;margin:0 0 16px 0">
+    <h3 id="titreBoul" style="font-family:'Bebas Neue',sans-serif;color:var(--orange);letter-spacing:2px;margin:0 0 14px 0">NOUVELLE ENTRÉE</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">
+      <div>
+        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">DATE DE RÉCEPTION *</label>
+        <input type="date" id="boulDate" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">NUMÉRO D'AFFAIRE *</label>
+        <input type="text" id="boulAffaire" placeholder="N° ou nom affaire" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">FOURNISSEUR</label>
+        <input type="text" id="boulFourn" placeholder="Nom du fournisseur" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">STATUT</label>
+        <select id="boulStatut" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px">
+          <option value="En stock">✅ En stock</option>
+          <option value="Commandé">📦 Commandé</option>
+          <option value="Utilisé">🔧 Utilisé</option>
+          <option value="Manquant">⚠ Manquant</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">DÉTAIL *</label>
+        <textarea id="boulDetail" placeholder="Ex: Boulon M16x50 HV 10.9 galvanisé — 120 pièces, écrous + rondelles inclus..." 
+          style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;min-height:80px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-primary" onclick="sauvegarderBoul()">💾 Sauvegarder</button>
+      <button class="btn-secondary" onclick="fermerFormBoul()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- LISTE BOULONNERIE -->
+  <div id="listeBoul" style="display:flex;flex-direction:column;gap:8px"></div>
+  <div id="emptyBoul" style="display:none;text-align:center;padding:40px;color:var(--text-muted);font-size:13px">
+    Aucune entrée boulonnerie. Cliquez "+ Nouvelle entrée" pour commencer.
+  </div>
+</main>
+
+<script>
+// ======================== BOULONNERIE ========================
+var boulonnerie = JSON.parse(localStorage.getItem('boulonnerie') || '[]');
+var boulEditId = null;
+
+function saveBoulLocal() {
+  localStorage.setItem('boulonnerie', JSON.stringify(boulonnerie));
+}
+
+function ouvrirFormBoul(id) {
+  boulEditId = id || null;
+  var form = document.getElementById('formBoul');
+  form.style.display = 'block';
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (id) {
+    var b = boulonnerie.find(function(x){ return x.id === id; });
+    if (!b) return;
+    document.getElementById('boulDate').value = b.date || '';
+    document.getElementById('boulAffaire').value = b.affaire || '';
+    document.getElementById('boulFourn').value = b.fournisseur || '';
+    document.getElementById('boulDetail').value = b.detail || '';
+    document.getElementById('boulStatut').value = b.statut || 'En stock';
+    document.getElementById('titreBoul').textContent = 'MODIFIER ENTRÉE';
+  } else {
+    document.getElementById('boulDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('boulAffaire').value = '';
+    document.getElementById('boulFourn').value = '';
+    document.getElementById('boulDetail').value = '';
+    document.getElementById('boulStatut').value = 'En stock';
+    document.getElementById('titreBoul').textContent = 'NOUVELLE ENTRÉE';
+  }
+}
+
+function fermerFormBoul() {
+  document.getElementById('formBoul').style.display = 'none';
+  boulEditId = null;
+}
+
+function sauvegarderBoul() {
+  var date = document.getElementById('boulDate').value;
+  var affaire = document.getElementById('boulAffaire').value.trim();
+  var fournisseur = document.getElementById('boulFourn').value.trim();
+  var detail = document.getElementById('boulDetail').value.trim();
+  var statut = document.getElementById('boulStatut').value;
+  if (!date || !affaire || !detail) {
+    if (typeof showToast === 'function') showToast('⚠ Date, affaire et détail sont obligatoires', 'error');
+    else alert('Date, affaire et détail sont obligatoires');
+    return;
+  }
+  if (boulEditId) {
+    var idx = boulonnerie.findIndex(function(x){ return x.id === boulEditId; });
+    if (idx >= 0) {
+      boulonnerie[idx] = { id: boulEditId, date: date, affaire: affaire, fournisseur: fournisseur, detail: detail, statut: statut, createdAt: boulonnerie[idx].createdAt };
+    }
+  } else {
+    boulonnerie.unshift({ id: 'boul_' + Date.now(), date: date, affaire: affaire, fournisseur: fournisseur, detail: detail, statut: statut, createdAt: new Date().toISOString() });
+  }
+  saveBoulLocal();
+  fermerFormBoul();
+  renderBoul();
+  if (typeof showToast === 'function') showToast('🔩 Entrée boulonnerie sauvegardée', 'success');
+}
+
+function supprimerBoul(id) {
+  if (!confirm('Supprimer cette entrée boulonnerie ?')) return;
+  boulonnerie = boulonnerie.filter(function(x){ return x.id !== id; });
+  saveBoulLocal();
+  renderBoul();
+}
+
+var boulSearchVal = '';
+function filtrerBoul(val) {
+  boulSearchVal = (val||'').toLowerCase();
+  renderBoul();
+}
+
+function renderBoul() {
+  var items = boulonnerie.slice();
+  var q = boulSearchVal;
+  if (q) {
+    items = items.filter(function(b){
+      return (b.affaire||'').toLowerCase().includes(q)
+          || (b.detail||'').toLowerCase().includes(q)
+          || (b.fournisseur||'').toLowerCase().includes(q)
+          || (b.statut||'').toLowerCase().includes(q);
+    });
+  }
+  var el = document.getElementById('listeBoul');
+  var empty = document.getElementById('emptyBoul');
+  if (!items.length) {
+    el.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  var statutColors = {
+    'En stock':  { bg:'#0a1f10', border:'#16a34a', badge:'#22c55e' },
+    'Commandé':  { bg:'#1a1200', border:'#d97706', badge:'#f59e0b' },
+    'Utilisé':   { bg:'#0d1117', border:'#475569', badge:'#64748b' },
+    'Manquant':  { bg:'#200a0a', border:'#dc2626', badge:'#ef4444' }
+  };
+  el.innerHTML = items.map(function(b){
+    var sc = statutColors[b.statut] || statutColors['En stock'];
+    var dateStr = '';
+    if (b.date) {
+      var parts = b.date.split('-');
+      if (parts.length === 3) dateStr = parts[2]+'/'+parts[1]+'/'+parts[0];
+    }
+    return '<div style="background:'+sc.bg+';border:1px solid '+sc.border+';border-radius:8px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start">'
+      + '<div>'
+      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">'
+      + '<span style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:var(--orange);letter-spacing:1px">'+escBoul(b.affaire)+'</span>'
+      + '<span style="background:'+sc.badge+';color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:0.5px">'+escBoul(b.statut)+'</span>'
+      + (b.fournisseur ? '<span style="font-size:11px;color:var(--text-sub)">📦 '+escBoul(b.fournisseur)+'</span>' : '')
+      + '<span style="font-size:11px;color:var(--text-muted)">📅 '+dateStr+'</span>'
+      + '</div>'
+      + '<div style="font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap">'+escBoul(b.detail)+'</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
+      + '<button onclick="ouvrirFormBoul(\''+b.id+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-sub);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">✏</button>'
+      + '<button onclick="supprimerBoul(\''+b.id+'\')" style="background:var(--bg3);border:1px solid #7f1d1d;color:#f87171;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function escBoul(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function exportBoulCSV() {
+  if (!boulonnerie.length) { alert('Aucune donnée à exporter'); return; }
+  var rows = [['Date réception','N° affaire','Fournisseur','Détail','Statut','Créé le']];
+  boulonnerie.forEach(function(b){
+    rows.push([b.date||'', b.affaire||'', b.fournisseur||'', b.detail||'', b.statut||'', b.createdAt||'']);
+  });
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(';'); }).join('\n');
+  var blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = 'boulonnerie.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Init render quand onglet activé
+document.addEventListener('DOMContentLoaded', function(){
+  var tabBtns = document.querySelectorAll('.tab[data-tab]');
+  tabBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (btn.getAttribute('data-tab') === 'boulonnerie') renderBoul();
+    });
+  });
+});
+</script>
+
 </body>
 </html>
