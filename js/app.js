@@ -267,9 +267,19 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'
 function normalizeDate(d) {
   if (!d) return '';
   const s = String(d).trim();
+  // Date ISO avec timezone (ex: 2026-05-28T22:00:00.000Z) → extraire date LOCALE
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+    const dt = new Date(s);
+    if (!isNaN(dt)) {
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth()+1).padStart(2,'0');
+      const day = String(dt.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + day;
+    }
+  }
   // Déjà au bon format YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
-  // Format DD/MM/YYYY (depuis Sheets)
+  // Format DD/MM/YYYY
   if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
     const [day, month, year] = s.split('/');
     return year + '-' + month + '-' + day;
@@ -279,16 +289,29 @@ function normalizeDate(d) {
     const [day, month, year] = s.split('-');
     return year + '-' + month + '-' + day;
   }
-  // Essayer de parser autrement
   const dt = new Date(s);
-  if (!isNaN(dt)) return dt.toISOString().substring(0, 10);
+  if (!isNaN(dt)) {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2,'0');
+    const day = String(dt.getDate()).padStart(2,'0');
+    return y + '-' + m + '-' + day;
+  }
   return '';
 }
-
 // Normalise une date vers YYYY-MM-DD (accepte DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD)
 function normaliserDate(raw) {
   if (!raw) return '';
   const s = String(raw).trim();
+  // Date ISO avec timezone (ex: 2026-05-28T22:00:00.000Z) → extraire date LOCALE
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+    const dt = new Date(s);
+    if (!isNaN(dt)) {
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth()+1).padStart(2,'0');
+      const day = String(dt.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + day;
+    }
+  }
   // Déjà au bon format YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
   // Format DD/MM/YYYY ou DD-MM-YYYY
