@@ -761,6 +761,8 @@
     <input type="search" placeholder="🔍 Rechercher..." oninput="filtrerBoul(this.value)"
       style="padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;width:200px"/>
     <button class="btn-secondary" onclick="exportBoulCSV()" title="Exporter CSV">↓ CSV</button>
+    <button class="btn-secondary" onclick="syncBoulFromSheet()" title="Synchroniser depuis Google Sheets">🔄 Sync</button>
+    <span id="boulSyncIndicator" style="display:none;font-size:11px;color:var(--text-muted);padding:4px 8px">⏳ Sync…</span>
   </div>
 
   <!-- FORMULAIRE BOULONNERIE -->
@@ -809,13 +811,55 @@
 
 <script>
 // ======================== BOULONNERIE ========================
+// Données en mémoire + localStorage (fallback offline)
+// Sync Google Sheets via sheetRequest() défini dans app.js
 var boulonnerie = JSON.parse(localStorage.getItem('boulonnerie') || '[]');
-var boulEditId = null;
+var boulEditId  = null;
+var boulSyncing = false;
 
+// ── Helpers ──────────────────────────────────────────────────
 function saveBoulLocal() {
   localStorage.setItem('boulonnerie', JSON.stringify(boulonnerie));
 }
 
+function escBoul(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Sync vers Google Sheets ───────────────────────────────────
+// Appelle sheetRequest() si disponible (défini dans app.js),
+// sinon tombe en mode localStorage uniquement (offline).
+function boulSheetRequest(action, payload) {
+  if (typeof sheetRequest !== 'function') return Promise.resolve({ ok: false, offline: true });
+  return sheetRequest(action, payload);
+}
+
+// Charge les données depuis Sheets au démarrage de l'onglet
+function syncBoulFromSheet() {
+  if (boulSyncing) return;
+  boulSyncing = true;
+  setBoulSyncIndicator(true);
+  boulSheetRequest('getBoulonnerie', {})
+    .then(function(res) {
+      if (res && res.boulonnerie && Array.isArray(res.boulonnerie)) {
+        boulonnerie = res.boulonnerie;
+        saveBoulLocal();
+        renderBoul();
+      }
+    })
+    .catch(function() { /* offline — on garde localStorage */ })
+    .finally(function() {
+      boulSyncing = false;
+      setBoulSyncIndicator(false);
+    });
+}
+
+function setBoulSyncIndicator(on) {
+  var el = document.getElementById('boulSyncIndicator');
+  if (el) el.style.display = on ? 'inline' : 'none';
+}
+
+// ── Formulaire ────────────────────────────────────────────────
 function ouvrirFormBoul(id) {
   boulEditId = id || null;
   var form = document.getElementById('formBoul');
@@ -824,18 +868,18 @@ function ouvrirFormBoul(id) {
   if (id) {
     var b = boulonnerie.find(function(x){ return x.id === id; });
     if (!b) return;
-    document.getElementById('boulDate').value = b.date || '';
-    document.getElementById('boulAffaire').value = b.affaire || '';
-    document.getElementById('boulFourn').value = b.fournisseur || '';
-    document.getElementById('boulDetail').value = b.detail || '';
-    document.getElementById('boulStatut').value = b.statut || 'En stock';
+    document.getElementById('boulDate').value    = b.date       || '';
+    document.getElementById('boulAffaire').value = b.affaire    || '';
+    document.getElementById('boulFourn').value   = b.fournisseur|| '';
+    document.getElementById('boulDetail').value  = b.detail     || '';
+    document.getElementById('boulStatut').value  = b.statut     || 'En stock';
     document.getElementById('titreBoul').textContent = 'MODIFIER ENTRÉE';
   } else {
-    document.getElementById('boulDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('boulDate').value    = new Date().toISOString().slice(0,10);
     document.getElementById('boulAffaire').value = '';
-    document.getElementById('boulFourn').value = '';
-    document.getElementById('boulDetail').value = '';
-    document.getElementById('boulStatut').value = 'En stock';
+    document.getElementById('boulFourn').value   = '';
+    document.getElementById('boulDetail').value  = '';
+    document.getElementById('boulStatut').value  = 'En stock';
     document.getElementById('titreBoul').textContent = 'NOUVELLE ENTRÉE';
   }
 }
@@ -846,28 +890,47 @@ function fermerFormBoul() {
 }
 
 function sauvegarderBoul() {
-  var date = document.getElementById('boulDate').value;
-  var affaire = document.getElementById('boulAffaire').value.trim();
-  var fournisseur = document.getElementById('boulFourn').value.trim();
-  var detail = document.getElementById('boulDetail').value.trim();
-  var statut = document.getElementById('boulStatut').value;
+  var date       = document.getElementById('boulDate').value;
+  var affaire    = document.getElementById('boulAffaire').value.trim();
+  var fournisseur= document.getElementById('boulFourn').value.trim();
+  var detail     = document.getElementById('boulDetail').value.trim();
+  var statut     = document.getElementById('boulStatut').value;
+
   if (!date || !affaire || !detail) {
     if (typeof showToast === 'function') showToast('⚠ Date, affaire et détail sont obligatoires', 'error');
     else alert('Date, affaire et détail sont obligatoires');
     return;
   }
+
+  var entry;
   if (boulEditId) {
     var idx = boulonnerie.findIndex(function(x){ return x.id === boulEditId; });
     if (idx >= 0) {
-      boulonnerie[idx] = { id: boulEditId, date: date, affaire: affaire, fournisseur: fournisseur, detail: detail, statut: statut, createdAt: boulonnerie[idx].createdAt };
+      entry = { id: boulEditId, date: date, affaire: affaire, fournisseur: fournisseur, detail: detail, statut: statut, createdAt: boulonnerie[idx].createdAt };
+      boulonnerie[idx] = entry;
     }
   } else {
-    boulonnerie.unshift({ id: 'boul_' + Date.now(), date: date, affaire: affaire, fournisseur: fournisseur, detail: detail, statut: statut, createdAt: new Date().toISOString() });
+    entry = { id: 'boul_' + Date.now(), date: date, affaire: affaire, fournisseur: fournisseur, detail: detail, statut: statut, createdAt: new Date().toISOString() };
+    boulonnerie.unshift(entry);
   }
+
   saveBoulLocal();
   fermerFormBoul();
   renderBoul();
-  if (typeof showToast === 'function') showToast('🔩 Entrée boulonnerie sauvegardée', 'success');
+  if (typeof showToast === 'function') showToast('🔩 Sauvegarde en cours…', 'info');
+
+  // Sync Sheets
+  boulSheetRequest('saveBoulonnerie', { boulonnerie: entry })
+    .then(function(res) {
+      if (res && res.ok) {
+        if (typeof showToast === 'function') showToast('🔩 Boulonnerie synchronisée ✓', 'success');
+      } else if (!res.offline) {
+        if (typeof showToast === 'function') showToast('⚠ Sauvegardé localement (Sheets indisponible)', 'warning');
+      }
+    })
+    .catch(function() {
+      if (typeof showToast === 'function') showToast('📴 Sauvegardé localement (hors-ligne)', 'warning');
+    });
 }
 
 function supprimerBoul(id) {
@@ -875,8 +938,12 @@ function supprimerBoul(id) {
   boulonnerie = boulonnerie.filter(function(x){ return x.id !== id; });
   saveBoulLocal();
   renderBoul();
+
+  boulSheetRequest('deleteBoulonnerie', { id: id })
+    .catch(function() { /* suppression locale OK, sync plus tard */ });
 }
 
+// ── Recherche & rendu ─────────────────────────────────────────
 var boulSearchVal = '';
 function filtrerBoul(val) {
   boulSearchVal = (val||'').toLowerCase();
@@ -894,49 +961,41 @@ function renderBoul() {
           || (b.statut||'').toLowerCase().includes(q);
     });
   }
-  var el = document.getElementById('listeBoul');
+  var el    = document.getElementById('listeBoul');
   var empty = document.getElementById('emptyBoul');
-  if (!items.length) {
-    el.innerHTML = '';
-    empty.style.display = 'block';
-    return;
-  }
+  if (!items.length) { el.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-  var statutColors = {
-    'En stock':  { bg:'#0a1f10', border:'#16a34a', badge:'#22c55e' },
-    'Commandé':  { bg:'#1a1200', border:'#d97706', badge:'#f59e0b' },
-    'Utilisé':   { bg:'#0d1117', border:'#475569', badge:'#64748b' },
-    'Manquant':  { bg:'#200a0a', border:'#dc2626', badge:'#ef4444' }
+
+  var SC = {
+    'En stock': { bg:'#0a1f10', border:'#16a34a', badge:'#22c55e' },
+    'Commandé': { bg:'#1a1200', border:'#d97706', badge:'#f59e0b' },
+    'Utilisé':  { bg:'#0d1117', border:'#475569', badge:'#64748b' },
+    'Manquant': { bg:'#200a0a', border:'#dc2626', badge:'#ef4444' }
   };
+
   el.innerHTML = items.map(function(b){
-    var sc = statutColors[b.statut] || statutColors['En stock'];
+    var sc = SC[b.statut] || SC['En stock'];
     var dateStr = '';
-    if (b.date) {
-      var parts = b.date.split('-');
-      if (parts.length === 3) dateStr = parts[2]+'/'+parts[1]+'/'+parts[0];
-    }
+    if (b.date) { var p = b.date.split('-'); if (p.length===3) dateStr = p[2]+'/'+p[1]+'/'+p[0]; }
     return '<div style="background:'+sc.bg+';border:1px solid '+sc.border+';border-radius:8px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start">'
-      + '<div>'
-      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">'
-      + '<span style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:var(--orange);letter-spacing:1px">'+escBoul(b.affaire)+'</span>'
-      + '<span style="background:'+sc.badge+';color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:0.5px">'+escBoul(b.statut)+'</span>'
-      + (b.fournisseur ? '<span style="font-size:11px;color:var(--text-sub)">📦 '+escBoul(b.fournisseur)+'</span>' : '')
-      + '<span style="font-size:11px;color:var(--text-muted)">📅 '+dateStr+'</span>'
-      + '</div>'
-      + '<div style="font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap">'+escBoul(b.detail)+'</div>'
-      + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
-      + '<button onclick="ouvrirFormBoul(\''+b.id+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-sub);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">✏</button>'
-      + '<button onclick="supprimerBoul(\''+b.id+'\')" style="background:var(--bg3);border:1px solid #7f1d1d;color:#f87171;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>'
-      + '</div>'
-      + '</div>';
+      +'<div>'
+        +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">'
+          +'<span style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;color:var(--orange);letter-spacing:1px">'+escBoul(b.affaire)+'</span>'
+          +'<span style="background:'+sc.badge+';color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">'+escBoul(b.statut)+'</span>'
+          +(b.fournisseur?'<span style="font-size:11px;color:var(--text-sub)">📦 '+escBoul(b.fournisseur)+'</span>':'')
+          +'<span style="font-size:11px;color:var(--text-muted)">📅 '+dateStr+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap">'+escBoul(b.detail)+'</div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
+        +'<button onclick="ouvrirFormBoul(\''+b.id+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-sub);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">✏</button>'
+        +'<button onclick="supprimerBoul(\''+b.id+'\')" style="background:var(--bg3);border:1px solid #7f1d1d;color:#f87171;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>'
+      +'</div>'
+    +'</div>';
   }).join('');
 }
 
-function escBoul(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
+// ── Export CSV ────────────────────────────────────────────────
 function exportBoulCSV() {
   if (!boulonnerie.length) { alert('Aucune donnée à exporter'); return; }
   var rows = [['Date réception','N° affaire','Fournisseur','Détail','Statut','Créé le']];
@@ -944,20 +1003,24 @@ function exportBoulCSV() {
     rows.push([b.date||'', b.affaire||'', b.fournisseur||'', b.detail||'', b.statut||'', b.createdAt||'']);
   });
   var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(';'); }).join('\n');
-  var blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href = url; a.download = 'boulonnerie.csv'; a.click();
+  var blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  var url  = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='boulonnerie.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
-// Init render quand onglet activé
+// ── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function(){
-  var tabBtns = document.querySelectorAll('.tab[data-tab]');
-  tabBtns.forEach(function(btn){
+  document.querySelectorAll('.tab[data-tab]').forEach(function(btn){
     btn.addEventListener('click', function(){
-      if (btn.getAttribute('data-tab') === 'boulonnerie') renderBoul();
+      if (btn.getAttribute('data-tab') === 'boulonnerie') {
+        renderBoul();          // affiche localStorage immédiatement
+        syncBoulFromSheet();   // puis rafraîchit depuis Sheets
+      }
     });
   });
+  // Si l'app démarre directement sur l'onglet boulonnerie
+  if (window.location.hash === '#boulonnerie') syncBoulFromSheet();
 });
 </script>
 
