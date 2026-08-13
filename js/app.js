@@ -591,7 +591,7 @@ async function deleteArticle(id) {
   if (!confirm(`Supprimer "${art.reference} — ${art.designation}" ?`)) return;
   state.articles = state.articles.filter(r => r.id !== id);
   state.selectedIds = state.selectedIds.filter(x => x !== id);
-  const mvt = addMouvement('SUPPRESSION', art);
+  const mvt = addMouvement('SUPPRESSION', art, art.lastNote || '');
   saveLocal();
   render();
   showToast('🗑 Article supprimé');
