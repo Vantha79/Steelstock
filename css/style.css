@@ -28,6 +28,8 @@ html, body {
   font-size: 13px;
   min-height: 100vh;
   overscroll-behavior: none;
+  overflow-x: hidden;   /* ← ajoute cette ligne */
+  width: 100%;          /* ← et celle-ci */
 }
 
 /* ===================== SCROLLBAR ===================== */
