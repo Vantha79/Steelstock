@@ -3083,3 +3083,10 @@ function afficherLivs(q) {
     </div>`;
   }).join('');
 }
+// Corrige le décalage de mise en page après fermeture du clavier iOS
+document.addEventListener('focusout', () => {
+  setTimeout(() => window.scrollTo(0, 0), 50);
+});
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => window.scrollTo(0, 0), 200);
+});
