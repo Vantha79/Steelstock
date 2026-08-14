@@ -13,7 +13,7 @@ var COLS_LIVRAISONS  = ['id','date','fournisseur','affaire','statut','notes','cr
 var COLS_BOULONNERIE = ['id','date','affaire','fournisseur','detail','statut','createdAt'];
 
 var COLS_ARTICLES = ['id','reference','designation','forme','dimensions','quantite','unite','prix','fournisseur','localisation','statut','dateEntree','creePar','modifiePar','dateModif','lastNote'];
-var COLS_MVT      = ['id','date','type','reference','designation','quantite','note','par'];
+var COLS_MVT = ['id','date','type','reference','designation','quantite','note','par','localisation','dimensions'];
 
 function doGet(e) {
   const result = handleRequest(e);
