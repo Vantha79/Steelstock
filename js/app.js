@@ -349,6 +349,8 @@ function addMouvement(type, article, note='') {
     articleId: String(article.id),
     reference: article.reference,
     designation: article.designation,
+    dimensions: article.dimensions || '',
+    localisation: article.localisation || '',
     quantite: article.quantite,
     par: state.userName || '',
   };
@@ -562,6 +564,8 @@ function renderMouvements() {
       <td style="color:var(--text-muted)">${fmtDate(m.date)}</td>
       <td><span class="statut-badge ${m.type==='AJOUT'?'statut-Disponible':m.type==='SUPPRESSION'?'statut-Rupture':'statut-Faible'}">${m.type}</span></td>
       <td><b>${m.reference}</b></td><td>${m.designation}</td>
+      <td style="color:var(--text-muted)">${m.dimensions || '—'}</td>
+<td style="color:var(--text-muted)">${m.localisation || '—'}</td>
       <td class="${qtyClass(m.quantite)}">${m.quantite}</td>
       <td style="color:var(--text-muted)">${m.note && String(m.note).trim() ? m.note : '—'}</td>
       <td><span style="background:var(--bg3);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--orange)">${m.par && String(m.par).trim() && m.par!=='Inconnu' ? m.par : '—'}</span></td>
