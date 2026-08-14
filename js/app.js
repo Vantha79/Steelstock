@@ -571,7 +571,33 @@ function renderMouvements() {
       <td><span style="background:var(--bg3);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--orange)">${m.par && String(m.par).trim() && m.par!=='Inconnu' ? m.par : '—'}</span></td>
     </tr>`
   ).join('');
-}
+// Version cartes pour mobile
+  const cardsEl = document.getElementById('mvtMobileCards');
+  if (cardsEl) {
+    cardsEl.innerHTML = mvts.map(m => {
+      const typeColor = m.type==='AJOUT' ? 'statut-Disponible' : m.type==='SUPPRESSION' ? 'statut-Rupture' : 'statut-Faible';
+      const par = m.par && String(m.par).trim() && m.par!=='Inconnu' ? m.par : '—';
+      return `<div class="stock-card">
+        <div class="stock-card-top">
+          <div>
+            <div class="stock-card-desig">${m.designation}</div>
+            <div class="stock-card-ref">${m.reference}</div>
+            ${m.dimensions ? `<div class="stock-card-dims">${m.dimensions}</div>` : ''}
+          </div>
+          <div>
+            <span class="statut-badge ${typeColor}">${m.type}</span>
+            <div class="stock-card-qty" style="font-size:16px">${m.quantite}</div>
+          </div>
+        </div>
+        <div class="stock-card-row">
+          <div class="stock-card-field"><b>Date </b>${fmtDate(m.date)}</div>
+          ${m.localisation ? `<div class="stock-card-field"><b>Loc. </b>${m.localisation}</div>` : ''}
+          <div class="stock-card-field"><b>Par </b>${par}</div>
+        </div>
+        ${m.note && String(m.note).trim() ? `<div style="font-size:11px;color:var(--text-muted);padding:6px 0;border-top:1px solid var(--bg3);margin-top:4px">📝 ${m.note}</div>` : ''}
+      </div>`;
+    }).join('');
+  }}
 
 // ============================================================
 //  RENDER ALL
