@@ -776,8 +776,8 @@ function exportCSV(data, filename) {
   a.download = filename; a.click();
 }
 function exportMvtCSV() {
-  const cols = ['date','type','reference','designation','quantite','note'];
-  const header = ['Date','Type','Référence','Désignation','Quantité','Note'];
+const cols = ['date','type','reference','designation','dimensions','localisation','quantite','note'];
+const header = ['Date','Type','Référence','Désignation','Dimensions','Localisation','Quantité','Note'];
   const csv = [header.join(';'), ...state.mouvements.map(m=>cols.map(c=>c==='date'?fmtDate(m[c]):m[c]).join(';'))].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'}));
