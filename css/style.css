@@ -21,15 +21,18 @@
   --shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
-html, body {
+html {
+  background: var(--bg);
+}
+body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 13px;
   min-height: 100vh;
   overscroll-behavior: none;
-  overflow-x: hidden;   /* ← ajoute cette ligne */
-  width: 100%;          /* ← et celle-ci */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* ===================== SCROLLBAR ===================== */
@@ -89,8 +92,13 @@ html, body {
 .tabs {
   display: flex;
   padding: 0 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
+  flex-shrink: 0;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
