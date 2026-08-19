@@ -182,40 +182,46 @@
         <div class="form-group"><label>Forme</label>
           <select name="forme"><option>Plat</option><option>UPN</option><option>UPE</option><option>UPAF</option><option>Tube rond</option><option>Tube carré</option><option>Tube rectangle</option><option>Cornière égale</option><option>Cornière inégale</option><option>HEA</option><option>HEB</option><option>HEM</option><option>HD</option><option>IPE</option><option>IPN</option><option>Rond</option><option>Carré</option><option>Cornière</option><option>Tôle</option><option>Tube</option></select>
         </div>
-        <div class="form-group">
-          <label>Dimensions <span id="dimsHint" style="font-size:10px;color:var(--text-muted);font-weight:normal"></span></label>
-          <input type="text" name="dimensions" id="dimsInput" placeholder="ex: 200x6000" />
-        </div>
-        <div class="form-group"><label>Quantité</label><input type="number" name="quantite" min="0" step="0.01" value="0" /></div>
-        <div class="form-group"><label>Unité</label>
-          <select name="unite"><option>barre</option><option>tôle</option><option>pièce</option><option>ml</option><option>kg</option><option>m²</option></select>
-        </div>
-        <div class="form-group">
-          <label>Prix unitaire (€) 
-            <button type="button" id="btnPrixMarche" style="font-size:10px;padding:2px 8px;margin-left:6px;background:var(--bg3);border:1px solid var(--orange);color:var(--orange);border-radius:3px;cursor:pointer" title="Estimer depuis le cours du marché">📈 Cours marché</button>
-          </label>
-          <input type="number" name="prix" id="prixInput" min="0" step="0.01" value="0" />
-          <div id="prixMarcheInfo" style="font-size:10px;color:var(--text-muted);margin-top:3px"></div>
-          <div id="margeRow" style="display:none;margin-top:8px;background:var(--bg3);border-radius:6px;padding:8px 10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <label style="font-size:11px;color:var(--text-muted);margin:0">Marge fournisseur</label>
-              <span id="margeVal" style="font-size:13px;font-weight:700;color:var(--orange)">+30%</span>
-            </div>
-            <input type="range" id="margeSlider" min="0" max="100" value="30" step="1"
-              style="width:100%;accent-color:var(--orange)" />
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:2px">
-              <span>0%</span><span>Prix marché : <b id="prixBase">—</b></span><span>100%</span>
-            </div>
-          </div>
-        </div>
-        <div class="form-group"><label>Fournisseur</label><input type="text" name="fournisseur" /></div>
-        <div class="form-group"><label>Localisation</label><input type="text" name="localisation" placeholder="ex: A1-01" /></div>
-        <div class="form-group"><label>Statut</label>
-          <select name="statut"><option>Disponible</option><option>Faible stock</option><option>Rupture</option></select>
-        </div>
-        <div class="form-group"><label>Date entrée</label><input type="date" name="dateEntree" /></div>
-        <div class="form-group span2"><label>Note mouvement</label><input type="text" name="noteMvt" placeholder="ex: Livraison commande #42" /></div>
+        <div class="form-grid">
+  <div class="form-group span2"><label>Désignation *</label><input type="text" name="designation" required /></div>
+  <div class="form-group">
+    <label>Dimensions <span id="dimsHint" style="font-size:10px;color:var(--text-muted);font-weight:normal"></span></label>
+    <input type="text" name="dimensions" id="dimsInput" placeholder="ex: 200x6000" />
+  </div>
+  <div class="form-group"><label>Référence *</label><input type="text" name="reference" required placeholder="ex: S235JR" /></div>
+  <div class="form-group"><label>Forme</label>
+    <select name="forme"><option>Plat</option><option>UPN</option><option>UPE</option><option>UPAF</option><option>Tube rond</option><option>Tube carré</option><option>Tube rectangle</option><option>Cornière égale</option><option>Cornière inégale</option><option>HEA</option><option>HEB</option><option>HEM</option><option>HD</option><option>IPE</option><option>IPN</option><option>Rond</option><option>Carré</option><option>Cornière</option><option>Tôle</option><option>Tube</option></select>
+  </div>
+  <div class="form-group"><label>Quantité</label><input type="number" name="quantite" min="0" step="0.01" value="0" /></div>
+  <div class="form-group"><label>Unité</label>
+    <select name="unite"><option>barre</option><option>tôle</option><option>pièce</option><option>ml</option><option>kg</option><option>m²</option></select>
+  </div>
+  <div class="form-group">
+    <label>Prix unitaire (€) 
+      <button type="button" id="btnPrixMarche" style="font-size:10px;padding:2px 8px;margin-left:6px;background:var(--bg3);border:1px solid var(--orange);color:var(--orange);border-radius:3px;cursor:pointer" title="Estimer depuis le cours du marché">📈 Cours marché</button>
+    </label>
+    <input type="number" name="prix" id="prixInput" min="0" step="0.01" value="0" />
+    <div id="prixMarcheInfo" style="font-size:10px;color:var(--text-muted);margin-top:3px"></div>
+    <div id="margeRow" style="display:none;margin-top:8px;background:var(--bg3);border-radius:6px;padding:8px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label style="font-size:11px;color:var(--text-muted);margin:0">Marge fournisseur</label>
+        <span id="margeVal" style="font-size:13px;font-weight:700;color:var(--orange)">+30%</span>
       </div>
+      <input type="range" id="margeSlider" min="0" max="100" value="30" step="1"
+        style="width:100%;accent-color:var(--orange)" />
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:2px">
+        <span>0%</span><span>Prix marché : <b id="prixBase">—</b></span><span>100%</span>
+      </div>
+    </div>
+  </div>
+  <div class="form-group"><label>Fournisseur</label><input type="text" name="fournisseur" /></div>
+  <div class="form-group"><label>Localisation</label><input type="text" name="localisation" placeholder="ex: A1-01" /></div>
+  <div class="form-group"><label>Statut</label>
+    <select name="statut"><option>Disponible</option><option>Faible stock</option><option>Rupture</option></select>
+  </div>
+  <div class="form-group"><label>Date entrée</label><input type="date" name="dateEntree" /></div>
+  <div class="form-group span2"><label>Note mouvement</label><input type="text" name="noteMvt" placeholder="ex: Livraison commande #42" /></div>
+</div>
       <div class="form-actions">
         <button type="button" class="btn-secondary" id="btnCancel">Annuler</button>
         <button type="submit" class="btn-primary">Enregistrer</button>
