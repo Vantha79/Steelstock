@@ -660,6 +660,11 @@ window.openEdit = openEdit;
 function selectRow(id, event) {
   // Ignorer si on clique sur un bouton ou input
   if (event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT' || event.target.closest('button')) return;
+  toggleCheckbox(id);
+}
+window.selectRow = selectRow;
+
+function toggleCheckbox(id) {
   // Toggle sélection
   if (state.selectedIds.includes(id)) {
     state.selectedIds = state.selectedIds.filter(x => x !== id);
@@ -674,7 +679,7 @@ function selectRow(id, event) {
   // Mettre à jour barre sélection
   updateSelectionBar();
 }
-window.selectRow = selectRow;
+window.toggleCheckbox = toggleCheckbox;
 
 function updateSelectionBar() {
   const bar  = document.getElementById('selectionBar');
