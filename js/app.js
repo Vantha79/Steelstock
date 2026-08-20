@@ -1181,20 +1181,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSelectionBar();
   });
 
-  // Suppression groupée
+   // Suppression groupée
   document.getElementById('btnDeleteSelected').addEventListener('click', async () => {
     if (!confirm(`Supprimer ${state.selectedIds.length} article(s) ?`)) return;
     const toDelete = [...state.selectedIds];
+    const mvts = [];
     toDelete.forEach(id => {
       const art=state.articles.find(r=>r.id===id);
-      if (art) addMouvement('SUPPRESSION',art,'Suppression groupée');
+      if (art) mvts.push(addMouvement('SUPPRESSION',art,'Suppression groupée'));
     });
-      state.articles=state.articles.filter(r=>!toDelete.includes(r.id));
+    state.articles=state.articles.filter(r=>!toDelete.includes(r.id));
     state.selectedIds=[];
     saveLocal(); render();
     updateSelectionBar();
     showToast('🗑 Articles supprimés');
     for (const id of toDelete) await deleteFromSheets(id);
+    for (const mvt of mvts) await pushMouvement(mvt);
   });
 
   // Export
