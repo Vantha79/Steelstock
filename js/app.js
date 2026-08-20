@@ -1189,9 +1189,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const art=state.articles.find(r=>r.id===id);
       if (art) addMouvement('SUPPRESSION',art,'Suppression groupée');
     });
-    state.articles=state.articles.filter(r=>!toDelete.includes(r.id));
+      state.articles=state.articles.filter(r=>!toDelete.includes(r.id));
     state.selectedIds=[];
     saveLocal(); render();
+    updateSelectionBar();
     showToast('🗑 Articles supprimés');
     for (const id of toDelete) await deleteFromSheets(id);
   });
