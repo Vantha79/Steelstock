@@ -195,7 +195,7 @@ input:focus, select:focus { border-color: var(--orange); }
   overflow-x: auto;
   margin-bottom: 10px;
 }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 12px; }
 thead tr { background: var(--bg2); border-bottom: 2px solid var(--orange); }
 th {
   color: var(--text-sub);
