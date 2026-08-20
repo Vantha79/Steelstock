@@ -432,7 +432,7 @@ function renderTable() {
         style="cursor:pointer;transition:background 0.15s" 
         class="table-row${sel?' row-selected':''}"
         title="Clic pour sélectionner · Double-clic pour la fiche">
-      <td><input type="checkbox" class="row-cb" data-id="${r.id}" ${sel?'checked':''} onclick="event.stopPropagation()" /></td>
+     <td><input type="checkbox" class="row-cb" data-id="${r.id}" ${sel?'checked':''} onclick="event.stopPropagation();toggleCheckbox(${r.id})" /></td>
       <td>${r.designation}</td>
       <td><b style="color:${r.reference&&r.reference.toUpperCase().includes('S355')?'#f87171':r.reference&&r.reference.toUpperCase().includes('S235')?'#60a5fa':'inherit'}">${r.reference}</b></td>
       <td>${r.forme}</td>
