@@ -1155,15 +1155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Checkboxes
-  document.getElementById('tableBody').addEventListener('change', e => {
-    if (e.target.classList.contains('row-cb')) {
-      const id = parseInt(e.target.dataset.id);
-      if (e.target.checked) state.selectedIds.push(id);
-      else state.selectedIds=state.selectedIds.filter(x=>x!==id);
-      updateSelectAll(); renderDeleteBtn();
-    }
-  });
+
   // SelectAll dans l'en-tête
   document.getElementById('selectAllHeader').addEventListener('change', e => {
     const visible = filteredArticles().map(r => r.id);
