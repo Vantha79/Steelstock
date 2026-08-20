@@ -643,6 +643,9 @@ function openEdit(id) {
     const el = form.elements[k];
     if (el) el.value = art[k] !== undefined ? art[k] : '';
   });
+    // Le champ "Note mouvement" ne doit jamais reprendre une valeur précédente :
+  // c'est une note pour CE mouvement de modification, pas la dernière note enregistrée
+  if (form.elements['noteMvt']) form.elements['noteMvt'].value = '';
   document.getElementById('modalOverlay').classList.remove('hidden');
   // Si le panneau prix marché était ouvert, recalculer automatiquement
   setTimeout(() => {
