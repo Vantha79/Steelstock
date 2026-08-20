@@ -185,7 +185,8 @@ input:focus, select:focus { border-color: var(--orange); }
 .btn-secondary:hover { border-color: var(--orange); color: var(--text); }
 .btn-danger { background: #3b0f0f; color: #f87171; }
 .btn-danger:hover { background: #7f1d1d; }
-.btn-icon { background: none; padding: 5px 8px; font-size: 14px; }
+.btn-icon { background: none; padding: 5px 8px; font-size: 20px; color: var(--orange); }
+.btn-icon:hover { opacity: 0.75; transform: scale(1.1); }
 
 /* ===================== TABLE ===================== */
 .table-wrap {
