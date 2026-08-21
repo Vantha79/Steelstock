@@ -194,8 +194,7 @@ input:focus, select:focus { border-color: var(--orange); }
   border-radius: var(--radius);
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  touch-action: pan-x pan-y;
-  scrollbar-width: auto;
+  scroll-behavior: smooth;
   margin-bottom: 10px;
 }
 table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 12px; }
