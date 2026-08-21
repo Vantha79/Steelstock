@@ -196,6 +196,10 @@ input:focus, select:focus { border-color: var(--orange); }
   overscroll-behavior-x: contain;
   scroll-behavior: smooth;
   margin-bottom: 10px;
+  transform: rotateX(180deg);
+}
+.table-wrap table {
+  transform: rotateX(180deg);
 }
 table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 12px; }
 thead tr { background: var(--bg2); border-bottom: 2px solid var(--orange); }
