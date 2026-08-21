@@ -467,6 +467,13 @@ function renderTable() {
   renderDeleteBtn();
   updateSelectAll();
 }
+const _twrap = document.querySelector('.table-wrap');
+document.getElementById('scrollTableLeft')?.addEventListener('click', () => {
+  _twrap.scrollBy({ left: -300, behavior: 'smooth' });
+});
+document.getElementById('scrollTableRight')?.addEventListener('click', () => {
+  _twrap.scrollBy({ left: 300, behavior: 'smooth' });
+});
 
 // ============================================================
 //  RENDER CARDS (mobile)
