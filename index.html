@@ -100,10 +100,7 @@
       <button class="btn-primary" id="btnAdd">＋ Ajouter</button>
     </div>
   </div>
-   <div style="position:relative" class="desktop-only">
-    <button id="scrollTableLeft" title="Défiler vers la gauche" style="position:absolute;left:4px;top:50%;transform:translateY(-50%);z-index:5;background:var(--orange);color:#000;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.4)">◀</button>
-    <button id="scrollTableRight" title="Défiler vers la droite" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:5;background:var(--orange);color:#000;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.4)">▶</button>
-    <div class="table-wrap">
+   <div class="table-wrap desktop-only">
     <table>
       <thead>
         <tr>
@@ -125,9 +122,8 @@
           <th>Actions</th>
         </tr>
       </thead>
-           <tbody id="tableBody"></tbody>
+      <tbody id="tableBody"></tbody>
     </table>
-    </div>
   </div>
   <div id="mobileCards" class="mobile-only"></div>
   <div class="table-footer">
