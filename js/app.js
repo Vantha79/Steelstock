@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mvts = [];
     toDelete.forEach(id => {
       const art=state.articles.find(r=>r.id===id);
-      if (art) mvts.push(addMouvement('SUPPRESSION',art,'Suppression groupée'));
+           if (art) mvts.push(addMouvement('SUPPRESSION',art,art.lastNote || ''));
     });
     state.articles=state.articles.filter(r=>!toDelete.includes(r.id));
     state.selectedIds=[];
