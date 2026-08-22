@@ -215,7 +215,7 @@ th {
 th[data-sort] { cursor: pointer; }
 th[data-sort]:hover { color: var(--orange); }
 th.sorted { color: var(--orange); }
-td { padding: 8px 10px; vertical-align: middle; white-space: nowrap; border-bottom: 1px solid var(--bg3); }
+td { padding: 8px 10px; vertical-align: middle; white-space: nowrap; border-bottom: 1px solid var(--bg3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 tr:last-child td { border-bottom: none; }
 tbody tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
 tbody tr:hover td { background: var(--bg2) !important; }
