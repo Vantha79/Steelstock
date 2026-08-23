@@ -189,15 +189,18 @@ input:focus, select:focus { border-color: var(--orange); }
 .btn-icon:hover { opacity: 0.75; transform: scale(1.1); }
 
 /* ===================== TABLE ===================== */
+.table-scroll-y {
+  overflow-y: auto;
+  max-height: 65vh;
+  margin-bottom: 10px;
+}
+.table-scroll-y::-webkit-scrollbar { width: 10px; }
 .table-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow-x: auto;
-  overflow-y: auto;
-  max-height: 65vh;
   overscroll-behavior-x: contain;
   scroll-behavior: smooth;
-  margin-bottom: 10px;
   transform: rotateX(180deg);
 }
 .table-wrap table {
