@@ -700,6 +700,24 @@
   </div>
 </div>
 
+<!-- MODAL SORTIE MATIÈRE -->
+<div id="sortieModal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h2>📤 SORTIE MATIÈRE</h2>
+      <button class="modal-close" id="sortieModalClose">✕</button>
+    </div>
+    <div style="padding:16px">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Une ligne par article : profilé, qualité, longueur (Débit), nombre.<br>Ex : <b>HEA120 S275JR 10100 1</b></div>
+      <textarea id="sortieTexte" rows="6" style="width:100%;box-sizing:border-box;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;font-family:var(--font-mono);font-size:13px"></textarea>
+      <input id="sortieNote" type="text" placeholder="Affaire / lot (ex : D00070 L208/DS)" style="width:100%;box-sizing:border-box;margin-top:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;font-size:13px" />
+      <button class="btn-secondary" id="btnSortieApercu" style="margin-top:10px;width:100%">🔍 Vérifier</button>
+      <div id="sortieApercu" style="margin-top:10px"></div>
+      <button class="btn-primary hidden" id="btnSortieValider" style="margin-top:12px;width:100%">✅ Valider</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast hidden"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="js/app.js"></script>
