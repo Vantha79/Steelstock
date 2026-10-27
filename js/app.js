@@ -1628,6 +1628,86 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function sortieGrouperLignes(words) {
+  const ws = words.filter(w => w.text && w.text.trim())
+    .map(w => ({ t: w.text.trim(), x0: w.bbox ? w.bbox.x0 : w.x0, y0: w.bbox ? w.bbox.y0 : w.y0, x1: w.bbox ? w.bbox.x1 : w.x1, y1: w.bbox ? w.bbox.y1 : w.y1 }));
+  ws.forEach(w => { w.cy = (w.y0 + w.y1) / 2; w.h = w.y1 - w.y0; w.cx = (w.x0 + w.x1) / 2; });
+  ws.sort((a, b) => a.cy - b.cy);
+  const hs = ws.map(w => w.h).sort((a, b) => a - b);
+  const tol = Math.max(8, (hs[Math.floor(hs.length / 2)] || 20) * 0.6);
+  const lignes = [];
+  ws.forEach(w => {
+    const l = lignes[lignes.length - 1];
+    if (l && Math.abs(w.cy - l.cy) <= tol) {
+      l.mots.push(w);
+      l.cy = (l.cy * (l.mots.length - 1) + w.cy) / l.mots.length;
+    } else lignes.push({ cy: w.cy, mots: [w] });
+  });
+  lignes.forEach(l => l.mots.sort((a, b) => a.x0 - b.x0));
+  return lignes.map(l => {
+    const arr = l.mots.map(m => m.t);
+    arr.xs = l.mots.map(m => m.cx);
+    return arr;
+  });
+}
+
+function sortieCorrigerArticle(t) {
+  t = t.replace(/^(HE[ABM])[IL|l](\d{3})$/i, '$1$2');
+  return t.replace(/^(HE[ABM])[IL|l](\d{2})$/i, '$11$2');
+}
+
+function sortieLignesDepuisOCR(words) {
+  const rows = [];
+  let largeur = 0;
+  words.forEach(w => { const x1 = w.bbox ? w.bbox.x1 : w.x1; if (x1 > largeur) largeur = x1; });
+  sortieGrouperLignes(words).forEach(brut => {
+    const toks = [], xs = [];
+    brut.forEach((t, k) => {
+      const c = t.replace(/^[|_\[\]\-:.]+|[|_\[\]:]+$/g, '');
+      if (/[A-Za-z0-9]/.test(c)) { toks.push(c); xs.push(brut.xs[k]); }
+    });
+    const iAnc = toks.findIndex(t => /^(BRUT|GALVA)$/i.test(t));
+    let iQ = -1;
+    for (let i = 0; i < toks.length; i++) {
+      if (/^[SE]\d{3}[A-Z0-9]*$/.test(sortieCorrigerQualite(toks[i]))) { iQ = i; break; }
+    }
+    const fin = iQ !== -1 ? iQ : iAnc;
+    if (fin === -1) return;
+    let debut = 0;
+    if (/^\d{6,7}$/.test(toks[0])) debut = 1;
+    else if (/^\d{3}$/.test(toks[0]) && toks[1] && /^\d{3}$/.test(toks[1])) debut = 2;
+    else if (/^\d{2,3}$/.test(toks[0]) && toks[1] && /^\d{3}$/.test(toks[1])) debut = 2;
+    let nb = 1;
+    if (toks[debut] && debut < fin - 1) {
+      const c = toks[debut];
+      if (/^\d{1,2}$/.test(c)) { nb = parseInt(c); debut++; }
+      else if (c.length <= 2 && !/^RD$/i.test(c)) debut++;
+    }
+    const article = toks.slice(debut, fin).filter(t => !/^(BRUT|GALVA)$/i.test(t)).map(sortieCorrigerArticle).join(' ');
+    if (!article) return;
+    const qualite = iQ !== -1 ? sortieCorrigerQualite(toks[iQ]) : '';
+    const nums = [];
+    for (let i = Math.max(fin, iAnc) + 1; i < toks.length; i++) {
+      const m = toks[i].match(/^(\d{4,7})(-\d)?$/);
+      if (!m) continue;
+      let v = m[1];
+      if (v.length > 5) v = v.slice(v.length - 5);
+      nums.push({ v: parseInt(v), x: xs[i] });
+    }
+    if (iQ === -1 && !nums.length && debut === 0) return;
+    rows.push({ article, qualite, nb, nums });
+  });
+  const marge = largeur * 0.04;
+  return rows.map((r, idx) => {
+    const voisins = rows.slice(Math.max(0, idx - 5), idx + 6).filter(v => v.nums.length).map(v => v.nums[0].x).sort((a, b) => a - b);
+    const colonne = voisins.length >= 3 ? voisins[Math.floor(voisins.length / 2)] : null;
+    let n = null;
+    if (colonne === null) n = r.nums[0] || null;
+    else n = r.nums.find(c => Math.abs(c.x - colonne) <= marge) || null;
+    return { article: r.article, qualite: r.qualite, longueur: n ? n.v : 'LONGUEUR?', nb: r.nb };
+  });
+}
+
 function sortieApercu() {
   const rows = sortieParseLignes(document.getElementById('sortieTexte').value);
   sortiePlan = sortieAnalyser(rows);
