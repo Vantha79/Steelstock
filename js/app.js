@@ -1279,6 +1279,130 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (ficheModalEl) ficheModalEl.addEventListener('click', e => { if(e.target===ficheModalEl) ficheModalEl.classList.add('hidden'); });
 });
 
+// ============================================================
+//  SORTIE MATIÈRE (retrait du stock après préparation des bons)
+// ============================================================
+let sortiePlan = [];
+
+function sortieNorm(s) { return String(s || '').toUpperCase().replace(/\s+/g, ''); }
+function sortieEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function sortieLongueurArticle(art) {
+  const m = sortieNorm(art.dimensions).match(/\d{4,6}/g);
+  return m ? parseInt(m[m.length - 1]) : 0;
+}
+
+function sortieParseLignes(texte) {
+  const rows = [];
+  texte.split('\n').forEach(raw => {
+    const ligne = raw.trim();
+    if (!ligne) return;
+    let profil = '', qualite = '', longueur = 0, nb = 1;
+    ligne.toUpperCase().split(/\s+/).forEach(t => {
+      if (/^(HEA|HEB|HEM|HD|IPE|IPN|UPN|UPE|UPAF)\d+/.test(t)) profil = t;
+      else if (/^[SE]\d{3}[A-Z0-9]*$/.test(t)) qualite = t;
+      else if (/^\d{4,6}(MM)?$/.test(t)) longueur = parseInt(t);
+      else if (/^X?\d{1,3}$/.test(t)) nb = parseInt(t.replace('X', ''));
+    });
+    rows.push({ ligne, profil, qualite, longueur, nb });
+  });
+  return rows;
+}
+
+function sortieAnalyser(rows) {
+  const restant = {};
+  return rows.map(r => {
+    const res = { ...r, statut: 'ko', msg: '', art: null };
+    if (!r.profil || !r.longueur) { res.msg = 'Ligne illisible (profilé ou longueur manquant)'; return res; }
+    const re = new RegExp(r.profil + '(?!\\d)');
+    let cands = state.articles.filter(a =>
+      re.test([a.forme, a.designation, a.dimensions, a.reference].map(sortieNorm).join('|')) &&
+      sortieLongueurArticle(a) === r.longueur);
+    if (cands.length > 1 && r.qualite) {
+      const q = cands.filter(a => sortieNorm(a.reference) === r.qualite);
+      if (q.length) cands = q;
+    }
+    if (!cands.length) { res.msg = 'Introuvable dans le stock'; return res; }
+    if (cands.length > 1) { res.msg = cands.length + ' articles correspondent, précise la qualité'; return res; }
+    const art = cands[0];
+    res.art = art;
+    const id = String(art.id);
+    if (!(id in restant)) restant[id] = parseFloat(art.quantite) || 0;
+    const avant = restant[id];
+    if (avant < r.nb) { res.msg = 'Stock insuffisant (' + avant + ' dispo)'; return res; }
+    restant[id] = avant - r.nb;
+    const warnQ = r.qualite && sortieNorm(art.reference) !== r.qualite;
+    res.statut = warnQ ? 'warn' : 'ok';
+    res.msg = avant + ' → ' + restant[id] + (restant[id] === 0 ? ' (article retiré du stock)' : '') +
+              (warnQ ? ' ⚠ qualité en stock : ' + (art.reference || '—') : '');
+    return res;
+  });
+}
+
+function sortieApercu() {
+  const rows = sortieParseLignes(document.getElementById('sortieTexte').value);
+  sortiePlan = sortieAnalyser(rows);
+  const zone = document.getElementById('sortieApercu');
+  const btn = document.getElementById('btnSortieValider');
+  if (!sortiePlan.length) { zone.innerHTML = ''; btn.classList.add('hidden'); return; }
+  zone.innerHTML = sortiePlan.map(p => {
+    const c = p.statut === 'ok' ? 'var(--green)' : p.statut === 'warn' ? 'var(--yellow)' : 'var(--red)';
+    const ico = p.statut === 'ok' ? '✅' : p.statut === 'warn' ? '⚠️' : '❌';
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">' +
+      ico + ' <b>' + sortieEsc(p.profil || '?') + '</b> ' + sortieEsc(p.qualite) + ' · ' + (p.longueur || '?') + ' mm · −' + p.nb +
+      '<div style="color:' + c + ';margin-top:2px">' + sortieEsc(p.msg) + '</div></div>';
+  }).join('');
+  const nbOk = sortiePlan.filter(p => p.statut !== 'ko').length;
+  btn.textContent = '✅ Valider ' + nbOk + ' sortie(s)';
+  btn.classList.toggle('hidden', nbOk === 0);
+}
+
+async function sortieValider() {
+  const note = document.getElementById('sortieNote').value.trim();
+  const groupes = {};
+  sortiePlan.filter(p => p.statut !== 'ko').forEach(p => {
+    const id = String(p.art.id);
+    if (!groupes[id]) groupes[id] = { art: p.art, total: 0 };
+    groupes[id].total += p.nb;
+  });
+  const mvts = [], aPousser = [], aSupprimer = [];
+  Object.values(groupes).forEach(g => {
+    const art = g.art;
+    art.quantite = Math.max(0, (parseFloat(art.quantite) || 0) - g.total);
+    const txt = 'Sortie −' + g.total + (note ? ' · ' + note : '');
+    if (art.quantite === 0) {
+      state.articles = state.articles.filter(r => String(r.id) !== String(art.id));
+      state.selectedIds = state.selectedIds.filter(x => String(x) !== String(art.id));
+      aSupprimer.push(art.id);
+    } else {
+      art.statut = art.quantite <= 3 ? 'Faible stock' : 'Disponible';
+      aPousser.push(art);
+    }
+    mvts.push(addMouvement('SORTIE', art, txt));
+  });
+  saveLocal(); render();
+  document.getElementById('sortieModal').classList.add('hidden');
+  showToast('📤 ' + mvts.length + ' article(s) mis à jour');
+  for (const art of aPousser) await pushArticle(art);
+  for (const id of aSupprimer) await deleteFromSheets(id);
+  for (const mvt of mvts) await pushMouvement(mvt);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('sortieModal');
+  if (!modal) return;
+  document.getElementById('btnSortieMatiere').addEventListener('click', () => {
+    document.getElementById('sortieTexte').value = '';
+    document.getElementById('sortieNote').value = '';
+    document.getElementById('sortieApercu').innerHTML = '';
+    document.getElementById('btnSortieValider').classList.add('hidden');
+    modal.classList.remove('hidden');
+  });
+  document.getElementById('sortieModalClose').addEventListener('click', () => modal.classList.add('hidden'));
+  document.getElementById('btnSortieApercu').addEventListener('click', sortieApercu);
+  document.getElementById('btnSortieValider').addEventListener('click', sortieValider);
+});
+
 // PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
