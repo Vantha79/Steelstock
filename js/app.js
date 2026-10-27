@@ -1297,6 +1297,40 @@ function sortieParseLignes(texte) {
   texte.split('\n').forEach(raw => {
     const ligne = raw.trim();
     if (!ligne) return;
+    let toks = ligne.toUpperCase().split(/\s+/).filter(t => t !== 'BRUT' && t !== 'GALVA');
+    let nb = 1, qualite = '', longueur = 0;
+    if (toks.length > 1 && /^X?\d{1,3}$/.test(toks[toks.length - 1])) {
+      nb = parseInt(toks.pop().replace('X', ''));
+    }
+    const reste = [];
+    toks.forEach(t => {
+      if (!qualite && /^[SE]\d{3}[A-Z0-9]*$/.test(t)) qualite = t;
+      else if (!longueur && /^\d{4,6}(MM)?$/.test(t)) longueur = parseInt(t);
+      else reste.push(t);
+    });
+    rows.push({ ligne, profil: reste.join(' '), qualite, longueur, nb });
+  });
+  return rows;
+}
+
+function sortieContient(hay, tok) {
+  let i = hay.indexOf(tok);
+  while (i !== -1) {
+    const avant = i > 0 ? hay[i - 1] : '';
+    const apres = hay[i + tok.length] || '';
+    const okAvant = !/^\d/.test(tok) || !/\d/.test(avant);
+    const okApres = !/\d$/.test(tok) || !/\d/.test(apres);
+    if (okAvant && okApres) return true;
+    i = hay.indexOf(tok, i + 1);
+  }
+  return false;
+}
+
+function sortieParseLignesAncien(texte) {
+  const rows = [];
+  texte.split('\n').forEach(raw => {
+    const ligne = raw.trim();
+    if (!ligne) return;
     let profil = '', qualite = '', longueur = 0, nb = 1;
     ligne.toUpperCase().split(/\s+/).forEach(t => {
       if (/^(HEA|HEB|HEM|HD|IPE|IPN|UPN|UPE|UPAF)\d+/.test(t)) profil = t;
@@ -1310,6 +1344,37 @@ function sortieParseLignes(texte) {
 }
 
 function sortieAnalyser(rows) {
+  const restant = {};
+  return rows.map(r => {
+    const res = { ...r, statut: 'ko', msg: '', art: null };
+    if (!r.profil || !r.longueur) { res.msg = 'Ligne illisible (article ou longueur manquant)'; return res; }
+    const toks = r.profil.split(' ').map(sortieNorm).filter(Boolean);
+    let cands = state.articles.filter(a => {
+      const hay = [a.forme, a.designation, a.dimensions, a.reference].map(sortieNorm).join('|');
+      return toks.every(t => sortieContient(hay, t)) && sortieLongueurArticle(a) === r.longueur;
+    });
+    if (cands.length > 1 && r.qualite) {
+      const q = cands.filter(a => sortieNorm(a.reference) === r.qualite);
+      if (q.length) cands = q;
+    }
+    if (!cands.length) { res.msg = 'Introuvable dans le stock'; return res; }
+    if (cands.length > 1) { res.msg = cands.length + ' articles correspondent, précise la qualité'; return res; }
+    const art = cands[0];
+    res.art = art;
+    const id = String(art.id);
+    if (!(id in restant)) restant[id] = parseFloat(art.quantite) || 0;
+    const avant = restant[id];
+    if (avant < r.nb) { res.msg = 'Stock insuffisant (' + avant + ' dispo)'; return res; }
+    restant[id] = avant - r.nb;
+    const warnQ = r.qualite && sortieNorm(art.reference) !== r.qualite;
+    res.statut = warnQ ? 'warn' : 'ok';
+    res.msg = avant + ' → ' + restant[id] + (restant[id] === 0 ? ' (article retiré du stock)' : '') +
+              (warnQ ? ' ⚠ qualité en stock : ' + (art.reference || '—') : '');
+    return res;
+  });
+}
+
+function sortieAnalyserAncien(rows) {
   const restant = {};
   return rows.map(r => {
     const res = { ...r, statut: 'ko', msg: '', art: null };
