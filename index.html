@@ -709,6 +709,9 @@
     </div>
     <div style="padding:16px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Une ligne par article : profilé, qualité, longueur (Débit), nombre.<br>Ex : <b>HEA120 S275JR 10100 1</b></div>
+      <button class="btn-primary" id="btnSortieImport" style="width:100%;margin-bottom:8px">📷 Importer un bon (photo / PDF)</button>
+      <input type="file" id="sortieFichier" accept="image/*,.pdf" style="display:none" />
+      <div id="sortieStatut" style="font-size:12px;color:var(--text-muted);margin-bottom:8px"></div>
       <textarea id="sortieTexte" rows="6" style="width:100%;box-sizing:border-box;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;font-family:var(--font-mono);font-size:13px"></textarea>
       <input id="sortieNote" type="text" placeholder="Affaire / lot (ex : D00070 L208/DS)" style="width:100%;box-sizing:border-box;margin-top:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;font-size:13px" />
       <button class="btn-secondary" id="btnSortieApercu" style="margin-top:10px;width:100%">🔍 Vérifier</button>
