@@ -1463,6 +1463,171 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function sortieGrouperLignes(words) {
+  const ws = words.filter(w => w.text && w.text.trim())
+    .map(w => ({ t: w.text.trim(), x0: w.bbox ? w.bbox.x0 : w.x0, y0: w.bbox ? w.bbox.y0 : w.y0, x1: w.bbox ? w.bbox.x1 : w.x1, y1: w.bbox ? w.bbox.y1 : w.y1 }));
+  ws.forEach(w => { w.cy = (w.y0 + w.y1) / 2; w.h = w.y1 - w.y0; });
+  ws.sort((a, b) => a.cy - b.cy);
+  const hs = ws.map(w => w.h).sort((a, b) => a - b);
+  const tol = Math.max(8, (hs[Math.floor(hs.length / 2)] || 20) * 0.6);
+  const lignes = [];
+  ws.forEach(w => {
+    const l = lignes[lignes.length - 1];
+    if (l && Math.abs(w.cy - l.cy) <= tol) {
+      l.mots.push(w);
+      l.cy = (l.cy * (l.mots.length - 1) + w.cy) / l.mots.length;
+    } else lignes.push({ cy: w.cy, mots: [w] });
+  });
+  lignes.forEach(l => l.mots.sort((a, b) => a.x0 - b.x0));
+  return lignes.map(l => l.mots.map(m => m.t));
+}
+
+function sortieCorrigerQualite(t) {
+  t = t.toUpperCase().replace(/^S[$§]/, 'S').replace(/[^A-Z0-9$§]/g, '');
+  if (/^[8$§5]\d{3}[A-Z0-9]*$/.test(t)) t = 'S' + t.slice(1);
+  return t.replace(/^(S\d{3})IR/, '$1JR');
+}
+
+function sortieCorrigerArticle(t) {
+  return t.replace(/^(HE[ABM])[IL|](\d{2,3})$/i, '$1$2');
+}
+
+function sortieLignesDepuisOCR(words) {
+  const resultat = [];
+  sortieGrouperLignes(words).forEach(brut => {
+    const toks = brut.map(t => t.replace(/^[|_\[\]\-:.]+|[|_\[\]:]+$/g, '')).filter(t => /[A-Za-z0-9]/.test(t));
+    const iAnc = toks.findIndex(t => /^(BRUT|GALVA)$/i.test(t));
+    let iQ = -1;
+    for (let i = 0; i < toks.length; i++) {
+      if (/^[SE]\d{3}[A-Z0-9]*$/.test(sortieCorrigerQualite(toks[i]))) { iQ = i; break; }
+    }
+    const fin = iQ !== -1 ? iQ : iAnc;
+    if (fin === -1) return;
+    let debut = 0;
+    if (/^\d{6}$/.test(toks[0])) debut = 1;
+    else if (/^\d{3}$/.test(toks[0]) && toks[1] && /^\d{3}$/.test(toks[1])) debut = 2;
+    else if (/^\d{2,3}$/.test(toks[0]) && toks[1] && /^\d{3}$/.test(toks[1])) debut = 2;
+    let nb = 1;
+    if (toks[debut] && debut < fin - 1) {
+      const c = toks[debut];
+      if (/^\d{1,2}$/.test(c)) { nb = parseInt(c); debut++; }
+      else if (c.length <= 2 && !/^RD$/i.test(c)) debut++;
+    }
+    const article = toks.slice(debut, fin).filter(t => !/^(BRUT|GALVA)$/i.test(t)).map(sortieCorrigerArticle).join(' ');
+    if (!article) return;
+    const qualite = iQ !== -1 ? sortieCorrigerQualite(toks[iQ]) : '';
+    let longueur = 0;
+    for (let i = Math.max(fin, iAnc) + 1; i < toks.length; i++) {
+      if (/^\d{4,5}$/.test(toks[i])) { longueur = parseInt(toks[i]); break; }
+    }
+    if (!longueur) return;
+    resultat.push({ article, qualite, longueur, nb });
+  });
+  return resultat;
+}
+
+function sortieAffaireDepuisOCR(words) {
+  let affaire = '', lot = '';
+  sortieGrouperLignes(words).forEach(toks => {
+    if (!affaire && /^D\d{4,6}$/i.test(toks[0])) affaire = toks.join(' ').replace(/\s+/g, ' ');
+    const i = toks.findIndex(t => /^PLAN\/?LOT/i.test(t));
+    if (!lot && i !== -1) lot = toks.slice(i + 1).join(' ').replace(/^[:\s]+/, '');
+  });
+  return [affaire, lot].filter(Boolean).join(' ');
+}
+
+function sortieChargerScript(src) {
+  return new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = ok;
+    s.onerror = () => ko(new Error('Chargement impossible (connexion internet ?)'));
+    document.head.appendChild(s);
+  });
+}
+
+async function sortieImagesDepuisFichier(file) {
+  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+    const base = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+    if (!window.pdfjsLib) await sortieChargerScript(base + 'pdf.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    const pages = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const vp = page.getViewport({ scale: 2.5 });
+      const c = document.createElement('canvas');
+      c.width = vp.width;
+      c.height = vp.height;
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      pages.push(c);
+    }
+    return pages;
+  }
+  return [await new Promise((ok, ko) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 3000 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k);
+      c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      ok(c);
+    };
+    img.onerror = () => ko(new Error('Image illisible'));
+    img.src = url;
+  })];
+}
+
+async function sortieImporterBon(file) {
+  const st = document.getElementById('sortieStatut');
+  try {
+    st.textContent = '⏳ Préparation du fichier…';
+    const pages = await sortieImagesDepuisFichier(file);
+    if (!window.Tesseract) {
+      st.textContent = '⏳ Chargement du lecteur (1re fois, quelques secondes)…';
+      await sortieChargerScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+    }
+    const worker = await Tesseract.createWorker('eng');
+    const mots = [];
+    for (let i = 0; i < pages.length; i++) {
+      st.textContent = '🔎 Lecture de la page ' + (i + 1) + '/' + pages.length + '…';
+      const { data } = await worker.recognize(pages[i]);
+      (data.words || []).forEach(w => mots.push({
+        text: w.text,
+        bbox: { x0: w.bbox.x0, y0: w.bbox.y0 + i * 100000, x1: w.bbox.x1, y1: w.bbox.y1 + i * 100000 }
+      }));
+    }
+    await worker.terminate();
+    const lignes = sortieLignesDepuisOCR(mots);
+    if (!lignes.length) throw new Error('Aucune ligne détectée : essaie une image plus nette, bien à plat');
+    document.getElementById('sortieTexte').value = lignes
+      .map(l => [l.article, l.qualite, l.longueur, l.nb].filter(v => v !== '' && v != null).join(' '))
+      .join('\n');
+    const aff = sortieAffaireDepuisOCR(mots);
+    if (aff) document.getElementById('sortieNote').value = aff;
+    st.textContent = '✅ ' + lignes.length + ' ligne(s) lues. Contrôle surtout les nombres (Nb barré = 1 par défaut).';
+    sortieApercu();
+  } catch (e) {
+    st.textContent = '❌ ' + e.message;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  let btn = document.getElementById('btnSortieImport');
+  let input = document.getElementById('sortieFichier');
+  if (!btn || !input) return;
+  const b2 = btn.cloneNode(true); btn.replaceWith(b2);
+  const i2 = input.cloneNode(true); input.replaceWith(i2);
+  b2.addEventListener('click', () => i2.click());
+  i2.addEventListener('change', () => {
+    if (i2.files[0]) sortieImporterBon(i2.files[0]);
+    i2.value = '';
+  });
+});
+
 function sortieApercu() {
   const rows = sortieParseLignes(document.getElementById('sortieTexte').value);
   sortiePlan = sortieAnalyser(rows);
