@@ -1404,6 +1404,65 @@ function sortieAnalyserAncien(rows) {
   });
 }
 
+function sortieLireFichier(file) {
+  return new Promise((resolve, reject) => {
+    if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+      const fr = new FileReader();
+      fr.onload = () => resolve({ mediaType: 'application/pdf', data: fr.result.split(',')[1] });
+      fr.onerror = () => reject(new Error('Fichier illisible'));
+      fr.readAsDataURL(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 2400 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k);
+      c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve({ mediaType: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.85).split(',')[1] });
+    };
+    img.onerror = () => reject(new Error('Image illisible'));
+    img.src = url;
+  });
+}
+
+async function sortieImporterBon(file) {
+  const st = document.getElementById('sortieStatut');
+  if (!state.scriptUrl) { st.textContent = '⚠️ Google Sheets non connecté'; return; }
+  st.textContent = '🤖 Lecture du bon en cours…';
+  try {
+    const f = await sortieLireFichier(file);
+    const res = await sheetRequest('analyserBon', f);
+    if (!res || !res.ok) throw new Error((res && res.error) || 'Pas de réponse du serveur');
+    const r = res.resultat || {};
+    const lignes = r.lignes || [];
+    if (!lignes.length) throw new Error('Aucune ligne détectée');
+    document.getElementById('sortieTexte').value = lignes
+      .map(l => [l.article, l.qualite, l.longueur, l.nb].filter(v => v !== '' && v != null).join(' '))
+      .join('\n');
+    const aff = [r.affaire, r.lot].filter(Boolean).join(' ');
+    if (aff) document.getElementById('sortieNote').value = aff;
+    st.textContent = '✅ ' + lignes.length + ' ligne(s) lues, contrôle le résultat ci-dessous';
+    sortieApercu();
+  } catch (e) {
+    st.textContent = '❌ ' + e.message;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnSortieImport');
+  const input = document.getElementById('sortieFichier');
+  if (!btn || !input) return;
+  btn.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    if (input.files[0]) sortieImporterBon(input.files[0]);
+    input.value = '';
+  });
+});
+
 function sortieApercu() {
   const rows = sortieParseLignes(document.getElementById('sortieTexte').value);
   sortiePlan = sortieAnalyser(rows);
